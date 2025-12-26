@@ -1,0 +1,29 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     * 
+     * Mengubah description menjadi nullable.
+     */
+    public function up(): void
+    {
+        // PostgreSQL syntax untuk mengubah column ke nullable
+        DB::statement('ALTER TABLE products ALTER COLUMN description DROP NOT NULL');
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        DB::statement("UPDATE products SET description = '' WHERE description IS NULL");
+        DB::statement('ALTER TABLE products ALTER COLUMN description SET NOT NULL');
+    }
+};
