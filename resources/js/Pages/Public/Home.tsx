@@ -1,5 +1,6 @@
 import PublicLayout from '@/Layouts/PublicLayout';
 import { Link } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 
 interface Category {
     id: string;
@@ -49,116 +50,287 @@ interface Props {
     recentArticles: RecentArticle[];
 }
 
+// Animated counter hook
+function useCounter(end: number, duration: number = 2000) {
+    const [count, setCount] = useState(0);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        if (!isVisible) return;
+        
+        let startTime: number;
+        const animate = (currentTime: number) => {
+            if (!startTime) startTime = currentTime;
+            const progress = Math.min((currentTime - startTime) / duration, 1);
+            setCount(Math.floor(progress * end));
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+        requestAnimationFrame(animate);
+    }, [end, duration, isVisible]);
+
+    return { count, setIsVisible };
+}
+
+// Category icons mapping
+const categoryIcons: { [key: string]: JSX.Element } = {
+    default: (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+    ),
+};
+
 export default function Home({ settings, stats, categories, featuredUmkms, recentArticles }: Props) {
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [scrollY, setScrollY] = useState(0);
+    
+    const { count: umkmCount, setIsVisible: setUmkmVisible } = useCounter(stats.total_umkm);
+    const { count: catCount, setIsVisible: setCatVisible } = useCounter(stats.total_categories);
+    const { count: prodCount, setIsVisible: setProdVisible } = useCounter(stats.total_products);
+    const { count: artCount, setIsVisible: setArtVisible } = useCounter(stats.total_articles);
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            setMousePosition({ x: e.clientX, y: e.clientY });
+        };
+        
+        const handleScroll = () => {
+            setScrollY(window.scrollY);
+        };
+        
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('scroll', handleScroll);
+        
+        // Trigger counter animation
+        const timer = setTimeout(() => {
+            setUmkmVisible(true);
+            setCatVisible(true);
+            setProdVisible(true);
+            setArtVisible(true);
+        }, 500);
+        
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('scroll', handleScroll);
+            clearTimeout(timer);
+        };
+    }, []);
+
     return (
         <PublicLayout 
             title={settings.site_name || 'UMKM Desa Kuwaru'}
             description={settings.site_description}
         >
-            {/* Hero Section */}
-            <section className="relative bg-gradient-to-br from-green-600 via-green-700 to-green-800 text-white overflow-hidden">
-                {/* Background Pattern */}
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute inset-0" style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                    }} />
-                </div>
+            {/* ============================================= */}
+            {/* HERO SECTION - Futuristic Design */}
+            {/* ============================================= */}
+            <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+                {/* Background Image */}
+                <div 
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    style={{
+                        backgroundImage: `url('https://images.unsplash.com/photo-1596402184320-417e7178b2cd?q=80&w=2070&auto=format&fit=crop')`,
+                    }}
+                />
                 
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 lg:py-36">
-                    <div className="text-center max-w-3xl mx-auto">
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                            {settings.site_tagline || 'UMKM Unggulan Desa Kuwaru'}
-                        </h1>
-                        <p className="text-lg md:text-xl text-green-100 mb-10 leading-relaxed">
-                            {settings.site_description || 'Temukan produk-produk berkualitas dari pelaku usaha lokal Desa Kuwaru. Dukung ekonomi desa, nikmati produk terbaik.'}
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Link
-                                href="/umkm"
-                                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-white text-green-700 rounded-xl hover:bg-green-50 transition-all duration-200 shadow-lg hover:shadow-xl"
-                            >
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {/* Dark Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-emerald-950/85 to-slate-900/90" />
+                
+                {/* Animated Grid Background */}
+                <div className="absolute inset-0 opacity-20">
+                    <div 
+                        className="absolute inset-0"
+                        style={{
+                            backgroundImage: `
+                                linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px),
+                                linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px)
+                            `,
+                            backgroundSize: '100px 100px',
+                            transform: `translateY(${scrollY * 0.5}px)`,
+                        }}
+                    />
+                </div>
+
+                {/* Floating Orbs */}
+                <div 
+                    className="absolute w-[600px] h-[600px] rounded-full blur-3xl opacity-20"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%)',
+                        left: mousePosition.x * 0.02 + 100,
+                        top: mousePosition.y * 0.02 - 100,
+                        transition: 'all 0.5s ease-out',
+                    }}
+                />
+                <div 
+                    className="absolute w-[400px] h-[400px] rounded-full blur-3xl opacity-15"
+                    style={{
+                        background: 'radial-gradient(circle, rgba(52, 211, 153, 0.5) 0%, transparent 70%)',
+                        right: -mousePosition.x * 0.01 + 100,
+                        bottom: -mousePosition.y * 0.01 + 50,
+                        transition: 'all 0.8s ease-out',
+                    }}
+                />
+
+                {/* Animated Particles */}
+                {[...Array(20)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="absolute w-1 h-1 bg-emerald-400 rounded-full animate-pulse"
+                        style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 2}s`,
+                            opacity: 0.3 + Math.random() * 0.5,
+                        }}
+                    />
+                ))}
+
+                {/* Hero Content */}
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 mt-5 mb-5 animate-fade-in">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-sm text-emerald-300 font-medium">Desa Kuwaru Digital Platform</span>
+                    </div>
+
+                    {/* Main Title */}
+                    <h1 
+                        className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                    >
+                        <span className="bg-gradient-to-r from-white via-emerald-100 to-emerald-300 bg-clip-text text-transparent">
+                            {settings.site_tagline || 'UMKM Unggulan'}
+                        </span>
+                        <br />
+                        <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-300 bg-clip-text text-transparent">
+                            Desa Kuwaru
+                        </span>
+                    </h1>
+
+                    {/* Description */}
+                    <p className="text-lg md:text-xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+                        {settings.site_description || 'Temukan produk-produk berkualitas dari pelaku usaha lokal Desa Kuwaru. Dukung ekonomi desa, nikmati produk terbaik dari pengrajin dan pedagang lokal.'}
+                    </p>
+
+                    {/* CTA Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                        <Link
+                            href="/umkm"
+                            className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold overflow-hidden rounded-2xl transition-all duration-300"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 transition-transform group-hover:scale-105" />
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-emerald-400 to-teal-400" />
+                            <span className="relative flex items-center gap-2 text-white">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
                                 Jelajahi UMKM
-                            </Link>
-                            <Link
-                                href="/peta-umkm"
-                                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold border-2 border-white text-white rounded-xl hover:bg-white/10 transition-all duration-200"
-                            >
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
-                                Lihat Peta UMKM
-                            </Link>
-                        </div>
+                            </span>
+                        </Link>
+                        <Link
+                            href="/peta-umkm"
+                            className="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-2xl bg-white/5 backdrop-blur-sm border border-white/20 text-white hover:bg-white/10 hover:border-white/30 transition-all duration-300"
+                        >
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Lihat Peta
+                        </Link>
                     </div>
                 </div>
 
-                {/* Wave Divider */}
-                <div className="absolute bottom-0 left-0 right-0">
-                    <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-                        <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#f9fafb"/>
-                    </svg>
+                {/* Scroll Indicator */}
+                <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+                    <button 
+                        onClick={() => {
+                            const nextSection = document.getElementById('categories-section') || document.querySelector('section:nth-of-type(2)');
+                            if (nextSection) {
+                                nextSection.scrollIntoView({ behavior: 'smooth' });
+                            } else {
+                                window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+                            }
+                        }}
+                        className="flex flex-col items-center gap-2 animate-bounce cursor-pointer hover:opacity-80 transition-opacity"
+                    >
+                        <span className="text-sm text-slate-400">Scroll untuk melihat lebih</span>
+                        <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </button>
                 </div>
             </section>
 
-            {/* Stats Section */}
-            <section className="py-12 bg-gray-50 -mt-1">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
-                            <div className="text-3xl md:text-4xl font-bold text-green-600 mb-1">{stats.total_umkm}</div>
-                            <div className="text-sm text-gray-500">UMKM Aktif</div>
-                        </div>
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
-                            <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-1">{stats.total_categories}</div>
-                            <div className="text-sm text-gray-500">Kategori</div>
-                        </div>
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
-                            <div className="text-3xl md:text-4xl font-bold text-purple-600 mb-1">{stats.total_products}</div>
-                            <div className="text-sm text-gray-500">Produk</div>
-                        </div>
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
-                            <div className="text-3xl md:text-4xl font-bold text-orange-600 mb-1">{stats.total_articles}</div>
-                            <div className="text-sm text-gray-500">Artikel</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Categories Section */}
+            {/* ============================================= */}
+            {/* CATEGORIES SECTION */}
+            {/* ============================================= */}
             {categories.length > 0 && (
-                <section className="py-16 md:py-20 bg-gray-50">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                                Kategori UMKM
+                <section id="categories-section" className="relative py-28 overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+                    {/* Animated Floating Elements */}
+                    <div className="absolute inset-0 pointer-events-none">
+                        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-500/15 rounded-full blur-3xl animate-pulse" />
+                        <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-3xl" />
+                    </div>
+
+                    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        {/* Section Header */}
+                        <div className="text-center mb-16">
+                            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30 mb-6">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="text-emerald-300 text-sm font-semibold tracking-wide uppercase">Eksplorasi</span>
+                            </div>
+                            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                                Temukan <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">Kategori</span> UMKM
                             </h2>
-                            <p className="text-gray-600 max-w-2xl mx-auto">
-                                Jelajahi berbagai kategori usaha yang ada di Desa Kuwaru
+                            <p className="text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                                Jelajahi beragam jenis usaha dari Desa Kuwaru, mulai dari kuliner khas pantai hingga kerajinan tangan berkualitas
                             </p>
                         </div>
                         
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {categories.map((category) => (
+                        {/* Categories Grid - Hexagonal Style */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                            {categories.map((category, index) => (
                                 <Link
                                     key={category.id}
                                     href={`/umkm?category=${category.id}`}
-                                    className="group bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg hover:border-green-200 transition-all duration-300 text-center"
+                                    className="group relative"
+                                    style={{ animationDelay: `${index * 0.1}s` }}
                                 >
-                                    <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-green-50 flex items-center justify-center group-hover:bg-green-100 transition-colors">
-                                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                        </svg>
+                                    <div className="relative p-6 rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 hover:bg-gradient-to-br hover:from-emerald-500/20 hover:to-teal-500/10 hover:border-emerald-400/40 transition-all duration-500 hover:scale-105 hover:-translate-y-2 text-center overflow-hidden">
+                                        {/* Glow Effect */}
+                                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                            <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/20 via-transparent to-transparent" />
+                                        </div>
+                                        
+                                        {/* Icon Container */}
+                                        <div className="relative w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-emerald-500/30 to-teal-500/20 flex items-center justify-center group-hover:from-emerald-500/50 group-hover:to-teal-500/30 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-lg shadow-emerald-500/10">
+                                            <span className="text-4xl transform group-hover:scale-110 transition-transform duration-300">
+                                                {['🍜', '🎨', '👕', '🧺', '🌾', '🐟', '🎭', '🏠', '🎁', '☕'][index % 10]}
+                                            </span>
+                                        </div>
+                                        
+                                        {/* Content */}
+                                        <h3 className="relative font-bold text-white text-lg mb-2 group-hover:text-emerald-300 transition-colors">
+                                            {category.name}
+                                        </h3>
+                                        <div className="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 group-hover:bg-emerald-500/20 transition-colors">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                            <span className="text-sm text-slate-300 font-medium">{category.umkms_count} UMKM</span>
+                                        </div>
+                                        
+                                        {/* Arrow on Hover */}
+                                        <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-emerald-500/0 group-hover:bg-emerald-500/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                                            <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                            </svg>
+                                        </div>
                                     </div>
-                                    <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-green-700 transition-colors">
-                                        {category.name}
-                                    </h3>
-                                    <p className="text-sm text-gray-500">
-                                        {category.umkms_count} UMKM
-                                    </p>
                                 </Link>
                             ))}
                         </div>
@@ -166,194 +338,353 @@ export default function Home({ settings, stats, categories, featuredUmkms, recen
                 </section>
             )}
 
-            {/* Featured UMKM Section */}
+            {/* ============================================= */}
+            {/* FEATURED UMKM SECTION */}
+            {/* ============================================= */}
             {featuredUmkms.length > 0 && (
-                <section className="py-16 md:py-20 bg-white">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between mb-12">
+                <section className="relative py-28 overflow-hidden bg-gradient-to-b from-slate-800 via-slate-900 to-slate-800">
+                    {/* Animated Decorations */}
+                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                        {/* Floating Stars */}
+                        {[...Array(8)].map((_, i) => (
+                            <div
+                                key={i}
+                                className="absolute w-1 h-1 bg-yellow-400 rounded-full animate-pulse"
+                                style={{
+                                    left: `${10 + i * 12}%`,
+                                    top: `${20 + (i % 3) * 25}%`,
+                                    animationDelay: `${i * 0.3}s`,
+                                }}
+                            />
+                        ))}
+                        {/* Floating Orbs */}
+                        <div className="absolute top-10 right-20 w-80 h-80 bg-yellow-500/10 rounded-full blur-3xl animate-pulse" />
+                        <div className="absolute bottom-10 left-20 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
+                        {/* Gradient Lines */}
+                        <div className="absolute top-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-500/20 to-transparent" />
+                        <div className="absolute bottom-1/4 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/20 to-transparent" />
+                    </div>
+
+                    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        {/* Section Header */}
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-14">
                             <div>
-                                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                                    UMKM Unggulan
+                                <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-sm border border-yellow-500/30 mb-6">
+                                    <span className="text-xl">⭐</span>
+                                    <span className="text-yellow-300 text-sm font-semibold tracking-wide uppercase">Pilihan Terbaik</span>
+                                </div>
+                                <h2 className="text-4xl md:text-6xl font-bold text-white mb-5">
+                                    UMKM <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">Unggulan</span>
                                 </h2>
-                                <p className="text-gray-600">
-                                    Pelaku usaha terbaik dari Desa Kuwaru
+                                <p className="text-lg text-slate-300 max-w-xl leading-relaxed">
+                                    Temukan pelaku usaha terbaik dengan produk berkualitas tinggi, langsung dari Desa Kuwaru
                                 </p>
                             </div>
                             <Link
                                 href="/umkm"
-                                className="hidden md:inline-flex items-center text-green-600 hover:text-green-700 font-medium"
+                                className="group inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-105"
                             >
-                                Lihat Semua
-                                <svg className="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                <span>Lihat Semua UMKM</span>
+                                <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                 </svg>
                             </Link>
                         </div>
                         
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                            {featuredUmkms.map((umkm) => (
+                        {/* UMKM Grid - Enhanced Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {featuredUmkms.map((umkm, index) => (
                                 <Link
                                     key={umkm.id}
                                     href={`/umkm/${umkm.slug}`}
-                                    className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl hover:border-transparent transition-all duration-300"
+                                    className="group relative"
+                                    style={{ animationDelay: `${index * 0.1}s` }}
                                 >
-                                    <div 
-                                        className="h-3"
-                                        style={{ backgroundColor: umkm.theme?.primary_color || '#16a34a' }}
-                                    />
-                                    <div className="p-5">
-                                        <div className="flex items-center gap-4 mb-4">
+                                    <div className="relative h-full rounded-3xl overflow-hidden bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-emerald-400/50 transition-all duration-500 hover:scale-[1.02] hover:-translate-y-3 hover:shadow-2xl hover:shadow-emerald-500/20">
+                                        {/* Image/Logo Section */}
+                                        <div className="relative h-40 bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-cyan-500/20 overflow-hidden">
                                             {umkm.logo_url ? (
                                                 <img 
                                                     src={umkm.logo_url} 
                                                     alt={umkm.name}
-                                                    className="w-14 h-14 rounded-xl object-cover border border-gray-100"
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                 />
                                             ) : (
-                                                <div 
-                                                    className="w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-xl"
-                                                    style={{ backgroundColor: umkm.theme?.primary_color || '#16a34a' }}
-                                                >
-                                                    {umkm.name.charAt(0)}
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <div 
+                                                        className="w-20 h-20 rounded-2xl flex items-center justify-center text-white font-bold text-3xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-xl"
+                                                        style={{ 
+                                                            background: umkm.theme?.primary_color 
+                                                                ? `linear-gradient(to bottom right, ${umkm.theme.primary_color}, ${umkm.theme.secondary_color || umkm.theme.primary_color})` 
+                                                                : undefined 
+                                                        }}
+                                                    >
+                                                        {umkm.name.charAt(0)}
+                                                    </div>
                                                 </div>
                                             )}
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="font-semibold text-gray-900 truncate group-hover:text-green-700 transition-colors">
-                                                    {umkm.name}
-                                                </h3>
-                                                {umkm.category && (
-                                                    <p className="text-sm text-gray-500">{umkm.category}</p>
-                                                )}
+                                            {/* Gradient Overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
+                                            
+                                            {/* Verified Badge */}
+                                            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-emerald-500/90 backdrop-blur-sm text-white text-xs font-semibold flex items-center gap-1 shadow-lg">
+                                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                                Verified
                                             </div>
+                                            
+                                            {/* Category Badge */}
+                                            {umkm.category && (
+                                                <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-sm text-white text-xs font-medium">
+                                                    {umkm.category}
+                                                </div>
+                                            )}
                                         </div>
-                                        {umkm.tagline && (
-                                            <p className="text-sm text-gray-600 line-clamp-2">{umkm.tagline}</p>
-                                        )}
+                                        
+                                        {/* Card Content */}
+                                        <div className="p-5">
+                                            {/* Name */}
+                                            <h3 className="font-bold text-white text-lg mb-2 group-hover:text-emerald-300 transition-colors line-clamp-1">
+                                                {umkm.name}
+                                            </h3>
+                                            
+                                            {/* Tagline */}
+                                            <p className="text-sm text-slate-400 line-clamp-2 mb-4 min-h-[40px]">
+                                                {umkm.tagline || 'UMKM berkualitas dari Desa Kuwaru'}
+                                            </p>
+                                            
+                                            
+                                            {/* CTA Button */}
+                                            <button className="w-full py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold text-sm group-hover:bg-emerald-500 group-hover:text-white group-hover:border-emerald-500 transition-all duration-300 flex items-center justify-center gap-2">
+                                                Kunjungi
+                                                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        {/* Glow Effect on Hover */}
+                                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                            <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 via-transparent to-transparent" />
+                                        </div>
                                     </div>
                                 </Link>
                             ))}
-                        </div>
-
-                        <div className="mt-8 text-center md:hidden">
-                            <Link
-                                href="/umkm"
-                                className="inline-flex items-center text-green-600 hover:text-green-700 font-medium"
-                            >
-                                Lihat Semua UMKM
-                                <svg className="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </Link>
                         </div>
                     </div>
                 </section>
             )}
 
-            {/* Recent Articles Section */}
+            {/* ============================================= */}
+            {/* ARTICLES SECTION */}
+            {/* ============================================= */}
             {recentArticles.length > 0 && (
-                <section className="py-16 md:py-20 bg-gray-50">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between mb-12">
+                <section className="relative py-28 overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+                    {/* Animated Decorations */}
+                    <div className="absolute inset-0 pointer-events-none">
+                        <div className="absolute top-20 right-20 w-72 h-72 bg-orange-500/15 rounded-full blur-3xl animate-pulse" />
+                        <div className="absolute bottom-20 left-20 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+                        <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-yellow-500/5 rounded-full blur-3xl" />
+                    </div>
+
+                    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        {/* Section Header */}
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-14">
                             <div>
-                                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                                    Artikel Terbaru
+                                <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-orange-500/20 to-amber-500/20 backdrop-blur-sm border border-orange-500/30 mb-6">
+                                    <span className="text-xl">📰</span>
+                                    <span className="text-orange-300 text-sm font-semibold tracking-wide uppercase">Blog & Berita</span>
+                                </div>
+                                <h2 className="text-4xl md:text-6xl font-bold text-white mb-5">
+                                    Artikel <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 bg-clip-text text-transparent">Terbaru</span>
                                 </h2>
-                                <p className="text-gray-600">
-                                    Berita dan informasi dari UMKM Desa Kuwaru
+                                <p className="text-lg text-slate-300 max-w-xl leading-relaxed">
+                                    Temukan cerita inspiratif, tips bisnis, dan informasi terkini seputar UMKM Desa Kuwaru
                                 </p>
                             </div>
                             <Link
                                 href="/artikel"
-                                className="hidden md:inline-flex items-center text-green-600 hover:text-green-700 font-medium"
+                                className="group inline-flex items-center gap-3 px-7 py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold hover:from-orange-600 hover:to-amber-600 transition-all duration-300 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105"
                             >
-                                Lihat Semua
-                                <svg className="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                <span>Lihat Semua Artikel</span>
+                                <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                 </svg>
                             </Link>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {recentArticles.slice(0, 6).map((article) => (
+                        {/* Articles Grid - Magazine Style */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {recentArticles.slice(0, 6).map((article, index) => (
                                 <Link
                                     key={article.id}
                                     href={`/artikel/${article.slug}`}
-                                    className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300"
+                                    className="group relative"
+                                    style={{ animationDelay: `${index * 0.1}s` }}
                                 >
-                                    {article.featured_image ? (
-                                        <div className="aspect-video overflow-hidden">
-                                            <img 
-                                                src={article.featured_image} 
-                                                alt={article.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="aspect-video bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                                            <svg className="w-12 h-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </div>
-                                    )}
-                                    <div className="p-5">
-                                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                                            {article.umkm_name && (
-                                                <span className="text-green-600 font-medium">{article.umkm_name}</span>
+                                    <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/10 hover:border-orange-400/50 transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-500/10">
+                                        {/* Image Container */}
+                                        <div className="relative aspect-[16/10] overflow-hidden">
+                                            {article.featured_image ? (
+                                                <>
+                                                    <img 
+                                                        src={article.featured_image} 
+                                                        alt={article.title}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                    />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+                                                </>
+                                            ) : (
+                                                <div className="w-full h-full bg-gradient-to-br from-orange-500/30 via-amber-500/20 to-yellow-500/30 flex items-center justify-center">
+                                                    <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center">
+                                                        <svg className="w-10 h-10 text-orange-400/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                        </svg>
+                                                    </div>
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
+                                                </div>
                                             )}
-                                            {article.umkm_name && article.published_at && <span>•</span>}
-                                            {article.published_at && <span>{article.published_at}</span>}
+                                            
+                                            {/* Category Badge */}
+                                            {article.umkm_name && (
+                                                <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-orange-500/90 text-white text-xs font-semibold backdrop-blur-sm shadow-lg">
+                                                    {article.umkm_name}
+                                                </div>
+                                            )}
+                                            
+                                            {/* Reading Time */}
+                                            <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-slate-900/80 text-white text-xs font-medium backdrop-blur-sm flex items-center gap-1">
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                3 min
+                                            </div>
                                         </div>
-                                        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-green-700 transition-colors">
-                                            {article.title}
-                                        </h3>
-                                        {article.excerpt && (
-                                            <p className="text-sm text-gray-600 line-clamp-2">{article.excerpt}</p>
-                                        )}
+                                        
+                                        {/* Content */}
+                                        <div className="p-6">
+                                            {/* Date */}
+                                            <div className="flex items-center gap-2 text-sm text-slate-400 mb-3">
+                                                <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                {article.published_at || 'Baru dipublikasi'}
+                                            </div>
+                                            
+                                            {/* Title */}
+                                            <h3 className="font-bold text-white text-xl mb-3 line-clamp-2 group-hover:text-orange-300 transition-colors leading-snug">
+                                                {article.title}
+                                            </h3>
+                                            
+                                            {/* Excerpt */}
+                                            {article.excerpt && (
+                                                <p className="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed">{article.excerpt}</p>
+                                            )}
+                                            
+                                            {/* CTA */}
+                                            <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                                                <span className="text-sm text-orange-400 font-medium">Baca Selengkapnya</span>
+                                                <div className="w-10 h-10 rounded-full bg-orange-500/20 group-hover:bg-orange-500 flex items-center justify-center transition-all duration-300">
+                                                    <svg className="w-5 h-5 text-orange-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Glow Effect */}
+                                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                            <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 via-transparent to-transparent" />
+                                        </div>
                                     </div>
                                 </Link>
                             ))}
-                        </div>
-
-                        <div className="mt-8 text-center md:hidden">
-                            <Link
-                                href="/artikel"
-                                className="inline-flex items-center text-green-600 hover:text-green-700 font-medium"
-                            >
-                                Lihat Semua Artikel
-                                <svg className="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </Link>
                         </div>
                     </div>
                 </section>
             )}
 
-            {/* CTA Section */}
-            <section className="py-16 md:py-20 bg-gradient-to-br from-green-600 to-green-700 text-white">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                        Dukung UMKM Lokal Kami
+            {/* ============================================= */}
+            {/* CTA SECTION */}
+            {/* ============================================= */}
+            <section className="relative py-32 overflow-hidden">
+                {/* Animated Background */}
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600" style={{ backgroundSize: '200% 100%', animation: 'gradient-shift 10s ease infinite' }} />
+                
+                {/* Mesh Pattern */}
+                <div 
+                    className="absolute inset-0 opacity-30"
+                    style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                    }}
+                />
+
+                {/* Floating Elements */}
+                <div className="absolute top-10 left-10 w-32 h-32 border border-white/20 rounded-full animate-pulse" />
+                <div className="absolute bottom-10 right-10 w-48 h-48 border border-white/10 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+                <div className="absolute top-1/2 right-1/4 w-24 h-24 border border-white/15 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+
+                <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-8">
+                        <span className="text-2xl">🤝</span>
+                        <span className="text-white/90 font-medium">Mari Bersama Membangun Desa</span>
+                    </div>
+
+                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight">
+                        Dukung UMKM Lokal
+                        <br />
+                        <span className="text-emerald-200">Untuk Desa yang Lebih Maju</span>
                     </h2>
-                    <p className="text-lg text-green-100 mb-10 max-w-2xl mx-auto">
+                    
+                    <p className="text-xl text-emerald-100 mb-12 max-w-2xl mx-auto">
                         Setiap pembelian Anda membantu pertumbuhan ekonomi desa dan kesejahteraan keluarga pelaku UMKM.
                     </p>
+                    
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link
                             href="/umkm"
-                            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold bg-white text-green-700 rounded-xl hover:bg-green-50 transition-all duration-200"
+                            className="group inline-flex items-center justify-center px-10 py-5 text-lg font-bold bg-white text-emerald-700 rounded-2xl hover:bg-emerald-50 transition-all duration-300 shadow-2xl hover:shadow-white/20 hover:scale-105"
                         >
+                            <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
                             Mulai Jelajahi
                         </Link>
                         <Link
                             href="/tentang-desa"
-                            className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold border-2 border-white text-white rounded-xl hover:bg-white/10 transition-all duration-200"
+                            className="group inline-flex items-center justify-center px-10 py-5 text-lg font-bold border-2 border-white text-white rounded-2xl hover:bg-white/10 transition-all duration-300"
                         >
                             Tentang Desa Kami
+                            <svg className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                         </Link>
                     </div>
                 </div>
             </section>
+
+            {/* Custom Styles */}
+            <style>{`
+                @keyframes gradient-shift {
+                    0%, 100% { background-position: 0% 50%; }
+                    50% { background-position: 100% 50%; }
+                }
+                
+                @keyframes slide-right {
+                    0% { transform: translateX(-100%); }
+                    100% { transform: translateX(100%); }
+                }
+                
+                .animate-fade-in {
+                    animation: fade-in 0.6s ease-out;
+                }
+                
+                @keyframes fade-in {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
         </PublicLayout>
     );
 }

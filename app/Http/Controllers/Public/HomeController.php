@@ -32,6 +32,7 @@ class HomeController extends Controller
             'site_name',
             'site_description', 
             'site_tagline',
+            'site_logo',
             'hero_image',
             'contact_email',
             'contact_phone',
