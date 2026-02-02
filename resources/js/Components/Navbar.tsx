@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { useSiteSettings } from './ThemeProvider';
 
@@ -17,10 +17,20 @@ interface NavbarProps {
  * - Masuk button with profile avatar
  * - Responsive mobile menu
  */
+import { User, PageProps } from '@/types';
+
 export default function Navbar({ transparent = false }: NavbarProps) {
     const settings = useSiteSettings();
+    const { url, props } = usePage<PageProps>();
+    const user = props.auth?.user;
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    
+    // Get dashboard URL based on user role
+    const getDashboardUrl = () => {
+        if (!user) return '/login';
+        return user.role === 'admin_desa' ? '/admin/dashboard' : '/umkm/dashboard';
+    };
     
     // Handle scroll effect
     useEffect(() => {
@@ -39,6 +49,14 @@ export default function Navbar({ transparent = false }: NavbarProps) {
         { name: 'Peta UMKM', href: '/peta-umkm' },
         { name: 'Tentang Desa', href: '/tentang-desa' },
     ];
+    
+    // Check if a menu item is active
+    const isActive = (href: string) => {
+        if (href === '/') {
+            return url === '/';
+        }
+        return url.startsWith(href);
+    };
     
     // Split site name for styling (e.g., "Desa Kuwaru" -> "Desa" + ".Kuwaru")
     const nameParts = settings.site_name.split(' ');
@@ -89,27 +107,50 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200"
+                                className={`
+                                    px-4 py-2 text-sm font-medium rounded-full transition-all duration-200
+                                    ${isActive(item.href) 
+                                        ? 'bg-emerald-500/20 text-emerald-400 shadow-lg shadow-emerald-500/10' 
+                                        : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                                    }
+                                `}
                             >
                                 {item.name}
                             </Link>
                         ))}
                     </div>
                     
-                    {/* Right Section - Masuk Button & Profile */}
+                    {/* Right Section - Auth Buttons */}
                     <div className="hidden md:flex items-center gap-3">
-                        <Link
-                            href="/login"
-                            className="px-5 py-2.5 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-full transition-all duration-200 shadow-lg shadow-emerald-500/30"
-                        >
-                            Masuk
-                        </Link>
-                        {/* Guest Avatar Icon */}
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center text-white shadow-lg border-2 border-slate-700">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                            </svg>
-                        </div>
+                        {user ? (
+                            <>
+                                <Link
+                                    href={getDashboardUrl()}
+                                    className="px-5 py-2.5 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-full transition-all duration-200 shadow-lg shadow-emerald-500/30"
+                                >
+                                    Dashboard
+                                </Link>
+                                {/* User Avatar */}
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold shadow-lg border-2 border-slate-700">
+                                    {user.name.charAt(0).toUpperCase()}
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    href="/login"
+                                    className="px-5 py-2.5 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-full transition-all duration-200 shadow-lg shadow-emerald-500/30"
+                                >
+                                    Masuk
+                                </Link>
+                                {/* Guest Avatar Icon */}
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center text-white shadow-lg border-2 border-slate-700">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                </div>
+                            </>
+                        )}
                     </div>
                     
                     {/* Mobile Menu Button */}
@@ -136,7 +177,13 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className="block px-4 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-xl transition-all"
+                                    className={`
+                                        block px-4 py-3 text-base font-medium rounded-xl transition-all
+                                        ${isActive(item.href)
+                                            ? 'bg-emerald-500/20 text-emerald-400'
+                                            : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                                        }
+                                    `}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                     {item.name}
@@ -144,13 +191,23 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                             ))}
                             
                             <div className="pt-4 border-t border-slate-700/50">
-                                <Link
-                                    href="/login"
-                                    className="block w-full px-5 py-3 text-center text-base font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-all"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Masuk
-                                </Link>
+                                {user ? (
+                                    <Link
+                                        href={getDashboardUrl()}
+                                        className="block w-full px-5 py-3 text-center text-base font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-all"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        Dashboard
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        href="/login"
+                                        className="block w-full px-5 py-3 text-center text-base font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-all"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        Masuk
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use App\Models\UmkmMedia;
 
 class AdminUmkmController extends Controller
 {
@@ -151,21 +152,65 @@ class AdminUmkmController extends Controller
 
             DB::commit();
 
-            // Flash generated password for display
+            // Flash generated password for display and redirect to gallery
             if (!$request->filled('admin_password')) {
                 return redirect()
-                    ->route('admin.umkm.index')
-                    ->with('success', "UMKM berhasil ditambahkan. Password akun: {$password}");
+                    ->route('admin.umkm.gallery', $umkm)
+                    ->with('success', "UMKM berhasil ditambahkan. Password akun: {$password}. Silakan tambahkan foto-foto UMKM.");
             }
 
             return redirect()
-                ->route('admin.umkm.index')
-                ->with('success', 'UMKM berhasil ditambahkan.');
+                ->route('admin.umkm.gallery', $umkm)
+                ->with('success', 'UMKM berhasil ditambahkan. Silakan tambahkan foto-foto UMKM.');
 
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menambahkan UMKM: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Display the specified UMKM.
+     */
+    public function show(Umkm $umkm)
+    {
+        $umkm->load(['category', 'admin', 'logo', 'theme', 'gallery', 'products.media']);
+        
+        // Get article count
+        $articleCount = \App\Models\Article::where('umkm_id', $umkm->id)->count();
+        
+        // Get page view stats
+        $totalViews = \App\Models\PageView::where('umkm_id', $umkm->id)->count();
+        $monthlyViews = \App\Models\PageView::where('umkm_id', $umkm->id)
+            ->where('viewed_at', '>=', now()->startOfMonth())
+            ->count();
+
+        // Transform products to include thumbnail
+        $products = $umkm->products->map(function ($product) {
+            $thumbnail = $product->media->first();
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'price_range' => $product->price_range,
+                'is_featured' => $product->is_featured,
+                'image' => $thumbnail ? [
+                    'id' => $thumbnail->id,
+                    'file_path' => $thumbnail->file_path,
+                ] : null,
+            ];
+        });
+
+        return Inertia::render('Admin/Umkm/Show', [
+            'umkm' => array_merge($umkm->toArray(), ['products' => $products]),
+            'stats' => [
+                'products' => $umkm->products->count(),
+                'articles' => $articleCount,
+                'gallery' => $umkm->gallery->count(),
+                'total_views' => $totalViews,
+                'monthly_views' => $monthlyViews,
+            ],
+        ]);
     }
 
     /**
@@ -312,5 +357,95 @@ class AdminUmkmController extends Controller
         return redirect()
             ->route('admin.umkm.index')
             ->with('success', 'UMKM berhasil dihapus.');
+    }
+
+    /**
+     * Show the gallery management page.
+     */
+    public function gallery(Umkm $umkm)
+    {
+        $umkm->load(['category', 'logo', 'gallery']);
+
+        return Inertia::render('Admin/Umkm/Gallery', [
+            'umkm' => $umkm,
+        ]);
+    }
+
+    /**
+     * Upload images to UMKM gallery.
+     */
+    public function uploadGallery(Request $request, Umkm $umkm)
+    {
+        $request->validate([
+            'images' => 'required|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ]);
+
+        $uploadedMedia = [];
+        $currentMaxOrder = UmkmMedia::where('umkm_id', $umkm->id)->max('sort_order') ?? -1;
+
+        foreach ($request->file('images') as $index => $file) {
+            $path = $file->store('umkm/gallery/' . $umkm->id, 'public');
+            
+            $mediaFile = MediaFile::create([
+                'file_path' => $path,
+                'file_type' => MediaType::IMAGE,
+                'alt_text' => $umkm->name . ' gallery image',
+                'uploaded_by' => auth()->id(),
+            ]);
+
+            UmkmMedia::create([
+                'umkm_id' => $umkm->id,
+                'media_id' => $mediaFile->id,
+                'sort_order' => $currentMaxOrder + $index + 1,
+            ]);
+
+            $uploadedMedia[] = $mediaFile;
+        }
+
+        return back()->with('success', count($uploadedMedia) . ' foto berhasil diupload.');
+    }
+
+    /**
+     * Delete an image from UMKM gallery.
+     */
+    public function deleteGalleryImage(Umkm $umkm, MediaFile $media)
+    {
+        // Check if media belongs to this UMKM
+        $umkmMedia = UmkmMedia::where('umkm_id', $umkm->id)
+            ->where('media_id', $media->id)
+            ->first();
+
+        if (!$umkmMedia) {
+            return back()->with('error', 'Foto tidak ditemukan.');
+        }
+
+        // Delete file from storage
+        Storage::disk('public')->delete($media->file_path);
+        
+        // Delete records
+        $umkmMedia->delete();
+        $media->delete();
+
+        return back()->with('success', 'Foto berhasil dihapus.');
+    }
+
+    /**
+     * Reorder gallery images.
+     */
+    public function reorderGallery(Request $request, Umkm $umkm)
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'uuid',
+        ]);
+
+        foreach ($request->order as $index => $mediaId) {
+            UmkmMedia::where('umkm_id', $umkm->id)
+                ->where('media_id', $mediaId)
+                ->update(['sort_order' => $index]);
+        }
+
+        return back()->with('success', 'Urutan foto berhasil diperbarui.');
     }
 }

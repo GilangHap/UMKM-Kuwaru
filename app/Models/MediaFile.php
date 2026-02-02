@@ -90,6 +90,14 @@ class MediaFile extends Model
         return $this->hasMany(Umkm::class, 'logo_id');
     }
 
+    /**
+     * Relasi ke umkm_media (pivot) untuk galeri.
+     */
+    public function umkmMedia(): HasMany
+    {
+        return $this->hasMany(UmkmMedia::class, 'media_id');
+    }
+
     /* =====================================================
      * HELPER METHODS
      * ===================================================== */

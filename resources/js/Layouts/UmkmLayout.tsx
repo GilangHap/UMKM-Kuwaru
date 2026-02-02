@@ -64,6 +64,12 @@ export default function UmkmLayout({
             active: route().current('umkm.profile*'),
         },
         {
+            name: 'Galeri Foto',
+            href: route('umkm.gallery'),
+            icon: MenuIcons.Gallery,
+            active: route().current('umkm.gallery*'),
+        },
+        {
             name: 'Produk',
             href: route('umkm.products.index'),
             icon: MenuIcons.Product,

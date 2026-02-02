@@ -20,6 +20,7 @@ class AboutController extends Controller
     {
         $settings = Setting::getMany([
             'site_name',
+            'site_logo',
             'site_description',
             'village_name',
             'village_description',

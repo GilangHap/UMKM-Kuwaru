@@ -24,9 +24,9 @@ use Inertia\Inertia;
 // Homepage
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Direktori UMKM
+// Direktori UMKM (Index moved here, Show moved to bottom to avoid conflict)
 Route::get('/umkm', [UmkmDirectoryController::class, 'index'])->name('umkm.directory');
-Route::get('/umkm/{slug}', [UmkmDirectoryController::class, 'show'])->name('umkm.public.show');
+// Route::get('/umkm/{slug}', [UmkmDirectoryController::class, 'show'])->name('umkm.public.show'); // Moved to bottom
 
 // Artikel
 Route::get('/artikel', [ArticleController::class, 'index'])->name('articles.public.index');
@@ -63,6 +63,30 @@ Route::middleware(['auth', 'active', 'role:admin_desa'])
             ->name('umkm.toggle-status');
         Route::post('/umkm/{umkm}/toggle-featured', [\App\Http\Controllers\Admin\AdminUmkmController::class, 'toggleFeatured'])
             ->name('umkm.toggle-featured');
+        
+        // UMKM Gallery Management
+        Route::get('/umkm/{umkm}/gallery', [\App\Http\Controllers\Admin\AdminUmkmController::class, 'gallery'])
+            ->name('umkm.gallery');
+        Route::post('/umkm/{umkm}/gallery', [\App\Http\Controllers\Admin\AdminUmkmController::class, 'uploadGallery'])
+            ->name('umkm.gallery.upload');
+        Route::delete('/umkm/{umkm}/gallery/{media}', [\App\Http\Controllers\Admin\AdminUmkmController::class, 'deleteGalleryImage'])
+            ->name('umkm.gallery.delete');
+        Route::put('/umkm/{umkm}/gallery/reorder', [\App\Http\Controllers\Admin\AdminUmkmController::class, 'reorderGallery'])
+            ->name('umkm.gallery.reorder');
+
+        // UMKM Products Management (Admin)
+        Route::get('/umkm/{umkm}/products', [\App\Http\Controllers\Admin\AdminUmkmProductController::class, 'index'])
+            ->name('umkm.products.index');
+        Route::get('/umkm/{umkm}/products/create', [\App\Http\Controllers\Admin\AdminUmkmProductController::class, 'create'])
+            ->name('umkm.products.create');
+        Route::post('/umkm/{umkm}/products', [\App\Http\Controllers\Admin\AdminUmkmProductController::class, 'store'])
+            ->name('umkm.products.store');
+        Route::get('/umkm/{umkm}/products/{product}/edit', [\App\Http\Controllers\Admin\AdminUmkmProductController::class, 'edit'])
+            ->name('umkm.products.edit');
+        Route::put('/umkm/{umkm}/products/{product}', [\App\Http\Controllers\Admin\AdminUmkmProductController::class, 'update'])
+            ->name('umkm.products.update');
+        Route::delete('/umkm/{umkm}/products/{product}', [\App\Http\Controllers\Admin\AdminUmkmProductController::class, 'destroy'])
+            ->name('umkm.products.destroy');
 
         // User Management (Admin UMKM accounts)
         Route::get('/users', [\App\Http\Controllers\Admin\AdminUserController::class, 'index'])
@@ -152,6 +176,16 @@ Route::middleware(['auth', 'active', 'role:admin_umkm', 'umkm.linked'])
         Route::post('/branding/reset', [\App\Http\Controllers\Umkm\UmkmBrandingController::class, 'reset'])
             ->name('branding.reset');
 
+        // Gallery
+        Route::get('/gallery', [\App\Http\Controllers\Umkm\UmkmGalleryController::class, 'index'])
+            ->name('gallery');
+        Route::post('/gallery', [\App\Http\Controllers\Umkm\UmkmGalleryController::class, 'upload'])
+            ->name('gallery.upload');
+        Route::delete('/gallery/{media}', [\App\Http\Controllers\Umkm\UmkmGalleryController::class, 'destroy'])
+            ->name('gallery.delete');
+        Route::put('/gallery/reorder', [\App\Http\Controllers\Umkm\UmkmGalleryController::class, 'reorder'])
+            ->name('gallery.reorder');
+
         // Products
         Route::resource('products', \App\Http\Controllers\Umkm\UmkmProductController::class);
 
@@ -201,3 +235,16 @@ Route::middleware(['auth', 'active'])
 */
 
 require __DIR__.'/auth.php';
+
+/*
+|--------------------------------------------------------------------------
+| Public Wildcard Routes
+|--------------------------------------------------------------------------
+|
+| Route wildcard harus diletakkan paling bawah agar tidak mengganggu
+| route spesifik lainnya (seperti /umkm/dashboard, /umkm/products, dll)
+|
+*/
+
+// Detail UMKM (Slug)
+Route::get('/umkm/{slug}', [UmkmDirectoryController::class, 'show'])->name('umkm.public.show');

@@ -139,6 +139,17 @@ class Umkm extends Model
         return $this->hasMany(MarketplaceClick::class);
     }
 
+    /**
+     * Galeri foto UMKM (many-to-many dengan media_files).
+     */
+    public function gallery()
+    {
+        return $this->belongsToMany(MediaFile::class, 'umkm_media', 'umkm_id', 'media_id')
+            ->using(UmkmMedia::class)
+            ->withPivot(['id', 'sort_order', 'created_at'])
+            ->orderByPivot('sort_order');
+    }
+
     /* =====================================================
      * HELPER METHODS
      * ===================================================== */

@@ -16,6 +16,7 @@ interface FeaturedUmkm {
     tagline?: string;
     category?: string;
     logo_url?: string;
+    gallery_thumbnail?: string;
     theme?: {
         primary_color?: string;
         secondary_color?: string;
@@ -33,6 +34,14 @@ interface RecentArticle {
     featured_image?: string;
 }
 
+interface GalleryItem {
+    id: string;
+    url: string;
+    alt_text?: string;
+    umkm_name: string;
+    umkm_slug: string;
+}
+
 interface Props {
     settings: {
         site_name?: string;
@@ -48,6 +57,7 @@ interface Props {
     categories: Category[];
     featuredUmkms: FeaturedUmkm[];
     recentArticles: RecentArticle[];
+    galleryItems: GalleryItem[];
 }
 
 // Animated counter hook
@@ -82,9 +92,12 @@ const categoryIcons: { [key: string]: JSX.Element } = {
     ),
 };
 
-export default function Home({ settings, stats, categories, featuredUmkms, recentArticles }: Props) {
+export default function Home({ settings, stats, categories, featuredUmkms, recentArticles, galleryItems = [] }: Props) {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const [scrollY, setScrollY] = useState(0);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [isCarouselPaused, setIsCarouselPaused] = useState(false);
     
     const { count: umkmCount, setIsVisible: setUmkmVisible } = useCounter(stats.total_umkm);
     const { count: catCount, setIsVisible: setCatVisible } = useCounter(stats.total_categories);
@@ -131,7 +144,7 @@ export default function Home({ settings, stats, categories, featuredUmkms, recen
                 <div 
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{
-                        backgroundImage: `url('https://images.unsplash.com/photo-1596402184320-417e7178b2cd?q=80&w=2070&auto=format&fit=crop')`,
+                        backgroundImage: `url('/baldes_kuwaru.jpeg')`,
                     }}
                 />
                 
@@ -401,30 +414,51 @@ export default function Home({ settings, stats, categories, featuredUmkms, recen
                                     style={{ animationDelay: `${index * 0.1}s` }}
                                 >
                                     <div className="relative h-full rounded-3xl overflow-hidden bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-emerald-400/50 transition-all duration-500 hover:scale-[1.02] hover:-translate-y-3 hover:shadow-2xl hover:shadow-emerald-500/20">
-                                        {/* Image/Logo Section */}
-                                        <div className="relative h-40 bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-cyan-500/20 overflow-hidden">
-                                            {umkm.logo_url ? (
+                                        {/* Image/Logo Section - Gallery as Background */}
+                                        <div className="relative h-48 overflow-hidden">
+                                            {/* Gallery Thumbnail Background */}
+                                            {umkm.gallery_thumbnail ? (
                                                 <img 
-                                                    src={umkm.logo_url} 
-                                                    alt={umkm.name}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                    src={umkm.gallery_thumbnail} 
+                                                    alt={`${umkm.name} gallery`}
+                                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                 />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
+                                                <div 
+                                                    className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-teal-500/20 to-cyan-500/30"
+                                                />
+                                            )}
+                                            
+                                            {/* Dark Overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-slate-900/30" />
+                                            
+                                            {/* Logo Overlay */}
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                {umkm.logo_url ? (
+                                                    <div className="relative">
+                                                        <div 
+                                                            className="absolute -inset-2 rounded-2xl blur-md opacity-50"
+                                                            style={{ backgroundColor: umkm.theme?.primary_color || '#10b981' }}
+                                                        />
+                                                        <img 
+                                                            src={umkm.logo_url} 
+                                                            alt={umkm.name}
+                                                            className="relative w-20 h-20 rounded-2xl object-cover border-2 border-white/30 shadow-xl transform group-hover:scale-110 transition-transform duration-300"
+                                                        />
+                                                    </div>
+                                                ) : (
                                                     <div 
-                                                        className="w-20 h-20 rounded-2xl flex items-center justify-center text-white font-bold text-3xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-xl"
+                                                        className="w-20 h-20 rounded-2xl flex items-center justify-center text-white font-bold text-3xl shadow-xl border-2 border-white/30"
                                                         style={{ 
                                                             background: umkm.theme?.primary_color 
                                                                 ? `linear-gradient(to bottom right, ${umkm.theme.primary_color}, ${umkm.theme.secondary_color || umkm.theme.primary_color})` 
-                                                                : undefined 
+                                                                : 'linear-gradient(to bottom right, #10b981, #06b6d4)' 
                                                         }}
                                                     >
                                                         {umkm.name.charAt(0)}
                                                     </div>
-                                                </div>
-                                            )}
-                                            {/* Gradient Overlay */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
+                                                )}
+                                            </div>
                                             
                                             {/* Verified Badge */}
                                             <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-emerald-500/90 backdrop-blur-sm text-white text-xs font-semibold flex items-center gap-1 shadow-lg">
@@ -606,6 +640,210 @@ export default function Home({ settings, stats, categories, featuredUmkms, recen
             )}
 
             {/* ============================================= */}
+            {/* UMKM GALLERY SECTION */}
+            {/* ============================================= */}
+            {galleryItems.length > 0 && (
+                <section className="relative py-28 overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+                    {/* Animated Decorations */}
+                    <div className="absolute inset-0 pointer-events-none">
+                        <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-500/15 rounded-full blur-3xl animate-pulse" />
+                        <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+                        <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl" />
+                    </div>
+
+                    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        {/* Section Header */}
+                        <div className="text-center mb-14">
+                            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm border border-emerald-500/30 mb-6">
+                                <span className="text-xl">📸</span>
+                                <span className="text-emerald-300 text-sm font-semibold tracking-wide uppercase">Galeri Foto</span>
+                            </div>
+                            <h2 className="text-4xl md:text-6xl font-bold text-white mb-5">
+                                Galeri <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">UMKM</span> Kuwaru
+                            </h2>
+                            <p className="text-lg text-slate-300 max-w-xl mx-auto leading-relaxed">
+                                Lihat dokumentasi produk dan aktivitas dari berbagai UMKM di Desa Kuwaru
+                            </p>
+                        </div>
+                        
+                        {/* Infinite Carousel Gallery */}
+                        <div className="relative">
+                            {/* Gradient Overlays */}
+                            <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-slate-800 to-transparent z-10 pointer-events-none" />
+                            <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-800 to-transparent z-10 pointer-events-none" />
+                            
+                            {/* Carousel Container */}
+                            <div 
+                                className="overflow-hidden"
+                                onMouseEnter={() => setIsCarouselPaused(true)}
+                                onMouseLeave={() => setIsCarouselPaused(false)}
+                            >
+                                <div 
+                                    className="flex gap-6"
+                                    style={{
+                                        animation: 'scroll-left 30s linear infinite',
+                                        animationPlayState: isCarouselPaused ? 'paused' : 'running',
+                                        width: 'fit-content'
+                                    }}
+                                >
+                                    {/* First Set */}
+                                    {galleryItems.map((item, index) => (
+                                        <button
+                                            key={`first-${item.id}`}
+                                            onClick={() => {
+                                                setLightboxIndex(index);
+                                                setLightboxOpen(true);
+                                            }}
+                                            className="group relative flex-shrink-0 w-72 h-72 md:w-80 md:h-80 rounded-3xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-800 shadow-lg shadow-black/20 hover:shadow-emerald-500/30 transition-shadow duration-300"
+                                        >
+                                            <img 
+                                                src={item.url} 
+                                                alt={item.alt_text || `${item.umkm_name} gallery`}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <div className="w-16 h-16 rounded-full bg-emerald-500/20 backdrop-blur-sm flex items-center justify-center mb-4">
+                                                    <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                    </svg>
+                                                </div>
+                                                <Link
+                                                    href={`/umkm/${item.umkm_slug}`}
+                                                    className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition-colors z-10"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    {item.umkm_name}
+                                                </Link>
+                                            </div>
+                                        </button>
+                                    ))}
+                                    {/* Duplicate Set for Infinite Loop */}
+                                    {galleryItems.map((item, index) => (
+                                        <button
+                                            key={`second-${item.id}`}
+                                            onClick={() => {
+                                                setLightboxIndex(index);
+                                                setLightboxOpen(true);
+                                            }}
+                                            className="group relative flex-shrink-0 w-72 h-72 md:w-80 md:h-80 rounded-3xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-800 shadow-lg shadow-black/20 hover:shadow-emerald-500/30 transition-shadow duration-300"
+                                        >
+                                            <img 
+                                                src={item.url} 
+                                                alt={item.alt_text || `${item.umkm_name} gallery`}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/95 via-slate-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <div className="w-16 h-16 rounded-full bg-emerald-500/20 backdrop-blur-sm flex items-center justify-center mb-4">
+                                                    <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                    </svg>
+                                                </div>
+                                                <Link
+                                                    href={`/umkm/${item.umkm_slug}`}
+                                                    className="px-6 py-2 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 transition-colors z-10"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    {item.umkm_name}
+                                                </Link>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* View All Button */}
+                        <div className="text-center mt-12">
+                            <Link
+                                href="/umkm"
+                                className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-105"
+                            >
+                                <span>Lihat Semua UMKM</span>
+                                <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Lightbox Modal */}
+            {lightboxOpen && galleryItems.length > 0 && (
+                <div 
+                    className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+                    onClick={() => setLightboxOpen(false)}
+                >
+                    {/* Close Button */}
+                    <button
+                        onClick={() => setLightboxOpen(false)}
+                        className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    
+                    {/* Previous Button */}
+                    {galleryItems.length > 1 && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setLightboxIndex((prev) => (prev === 0 ? galleryItems.length - 1 : prev - 1));
+                            }}
+                            className="absolute left-4 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                    )}
+                    
+                    {/* Next Button */}
+                    {galleryItems.length > 1 && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setLightboxIndex((prev) => (prev === galleryItems.length - 1 ? 0 : prev + 1));
+                            }}
+                            className="absolute right-4 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    )}
+                    
+                    {/* Image with UMKM Info */}
+                    <div className="max-w-full max-h-[85vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+                        <img 
+                            src={galleryItems[lightboxIndex]?.url} 
+                            alt={galleryItems[lightboxIndex]?.alt_text || 'Gallery'}
+                            className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
+                        />
+                        <div className="mt-4 text-center">
+                            <Link
+                                href={`/umkm/${galleryItems[lightboxIndex]?.umkm_slug}`}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                Kunjungi {galleryItems[lightboxIndex]?.umkm_name}
+                            </Link>
+                        </div>
+                    </div>
+                    
+                    {/* Image Counter */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm">
+                        {lightboxIndex + 1} / {galleryItems.length}
+                    </div>
+                </div>
+            )}
+
+            {/* ============================================= */}
             {/* CTA SECTION */}
             {/* ============================================= */}
             <section className="relative py-32 overflow-hidden">
@@ -674,6 +912,11 @@ export default function Home({ settings, stats, categories, featuredUmkms, recen
                 @keyframes slide-right {
                     0% { transform: translateX(-100%); }
                     100% { transform: translateX(100%); }
+                }
+                
+                @keyframes scroll-left {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
                 }
                 
                 .animate-fade-in {

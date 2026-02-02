@@ -25,7 +25,7 @@ class UmkmDirectoryController extends Controller
     public function index(Request $request): Response
     {
         $query = Umkm::where('status', 'active')
-            ->with(['category', 'logo', 'theme']);
+            ->with(['category', 'logo', 'theme', 'gallery']);
 
         // Search
         if ($request->filled('search')) {
@@ -45,6 +45,7 @@ class UmkmDirectoryController extends Controller
         $umkms = $query->orderBy('name')
             ->paginate(12)
             ->through(function ($umkm) {
+                $galleryThumbnail = $umkm->gallery->first();
                 return [
                     'id' => $umkm->id,
                     'name' => $umkm->name,
@@ -53,6 +54,7 @@ class UmkmDirectoryController extends Controller
                     'category' => $umkm->category?->name,
                     'category_id' => $umkm->category_id,
                     'logo_url' => $umkm->logo ? "/storage/{$umkm->logo->file_path}" : null,
+                    'gallery_thumbnail' => $galleryThumbnail ? "/storage/{$galleryThumbnail->file_path}" : null,
                     'theme' => $umkm->theme ? [
                         'primary_color' => $umkm->theme->primary_color,
                     ] : null,
@@ -82,6 +84,7 @@ class UmkmDirectoryController extends Controller
                 'category',
                 'logo',
                 'theme',
+                'gallery',
                 'products' => function ($q) {
                     $q->with(['productMedia.media'])
                       ->orderByDesc('is_featured')
@@ -152,6 +155,14 @@ class UmkmDirectoryController extends Controller
                 'longitude' => $umkm->longitude,
                 'category' => $umkm->category?->name,
                 'logo_url' => $umkm->logo ? "/storage/{$umkm->logo->file_path}" : null,
+                'gallery' => $umkm->gallery->map(fn ($media) => [
+                    'id' => $media->id,
+                    'url' => "/storage/{$media->file_path}",
+                    'alt_text' => $media->alt_text,
+                ]),
+                'gallery_thumbnail' => $umkm->gallery->first() 
+                    ? "/storage/{$umkm->gallery->first()->file_path}" 
+                    : null,
                 'theme' => $umkm->theme ? [
                     'primary_color' => $umkm->theme->primary_color,
                     'secondary_color' => $umkm->theme->secondary_color,

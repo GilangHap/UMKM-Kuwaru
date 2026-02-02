@@ -129,6 +129,16 @@ export default function Index({ umkms, categories, filters }: Props) {
             render: (umkm: Umkm) => (
                 <div className="flex items-center justify-end gap-2">
                     <Link
+                        href={route('admin.umkm.show', umkm.id)}
+                        className="p-2 rounded-lg hover:bg-surface-hover text-muted hover:text-foreground transition-colors"
+                        title="Lihat Detail"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </Link>
+                    <Link
                         href={route('admin.umkm.edit', umkm.id)}
                         className="p-2 rounded-lg hover:bg-surface-hover text-muted hover:text-foreground transition-colors"
                         title="Edit"
@@ -158,6 +168,15 @@ export default function Index({ umkms, categories, filters }: Props) {
                             </svg>
                         </button>
                     )}
+                    <button
+                        onClick={() => setConfirmModal({ isOpen: true, umkm, action: 'delete' })}
+                        className="p-2 rounded-lg hover:bg-surface-hover text-muted hover:text-error transition-colors"
+                        title="Hapus"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
                 </div>
             ),
         },
@@ -250,17 +269,34 @@ export default function Index({ umkms, categories, filters }: Props) {
                 onClose={() => setConfirmModal({ isOpen: false })}
                 onConfirm={() => {
                     if (confirmModal.umkm && confirmModal.action) {
-                        const status = confirmModal.action === 'activate' ? 'active' : 'suspended';
-                        handleToggleStatus(confirmModal.umkm, status);
+                        if (confirmModal.action === 'delete') {
+                            router.delete(route('admin.umkm.destroy', confirmModal.umkm.id), {
+                                preserveScroll: true,
+                                onSuccess: () => setConfirmModal({ isOpen: false }),
+                            });
+                        } else {
+                            const status = confirmModal.action === 'activate' ? 'active' : 'suspended';
+                            handleToggleStatus(confirmModal.umkm, status);
+                        }
                     }
                 }}
-                title={confirmModal.action === 'activate' ? 'Aktifkan UMKM' : 'Tangguhkan UMKM'}
-                message={
-                    confirmModal.action === 'activate'
-                        ? `Apakah Anda yakin ingin mengaktifkan UMKM "${confirmModal.umkm?.name}"?`
-                        : `Apakah Anda yakin ingin menangguhkan UMKM "${confirmModal.umkm?.name}"? UMKM yang ditangguhkan tidak akan muncul di halaman publik.`
+                title={
+                    confirmModal.action === 'delete' 
+                        ? 'Hapus UMKM' 
+                        : (confirmModal.action === 'activate' ? 'Aktifkan UMKM' : 'Tangguhkan UMKM')
                 }
-                confirmLabel={confirmModal.action === 'activate' ? 'Aktifkan' : 'Tangguhkan'}
+                message={
+                    confirmModal.action === 'delete'
+                        ? `Apakah Anda yakin ingin menghapus UMKM "${confirmModal.umkm?.name}"? Tindakan ini tidak dapat dibatalkan dan semua data terkait akan dihapus.`
+                        : (confirmModal.action === 'activate'
+                            ? `Apakah Anda yakin ingin mengaktifkan UMKM "${confirmModal.umkm?.name}"?`
+                            : `Apakah Anda yakin ingin menangguhkan UMKM "${confirmModal.umkm?.name}"? UMKM yang ditangguhkan tidak akan muncul di halaman publik.`)
+                }
+                confirmLabel={
+                    confirmModal.action === 'delete' 
+                        ? 'Hapus' 
+                        : (confirmModal.action === 'activate' ? 'Aktifkan' : 'Tangguhkan')
+                }
                 variant={confirmModal.action === 'activate' ? 'info' : 'danger'}
             />
         </AdminLayout>
