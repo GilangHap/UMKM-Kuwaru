@@ -18,15 +18,23 @@ interface Props {
 }
 
 export default function About({ settings, stats }: Props) {
+    // KKN Team Members
+    const teamMembers = [
+        { name: 'Gilang Hapizin', role: 'Web Developer', faculty: 'Teknik' },
+        { name: 'Anggota Tim 2', role: 'Koordinator', faculty: 'Ekonomi' },
+        { name: 'Anggota Tim 3', role: 'Dokumentasi', faculty: 'Sosial' },
+        { name: 'Anggota Tim 4', role: 'Humas', faculty: 'Hukum' },
+    ];
+
     return (
         <PublicLayout
-            title="Tentang Desa Kuwaru"
-            description={settings.village_description || 'Mengenal lebih dekat Desa Kuwaru dan program UMKM digitalnya'}
+            title="Tentang"
+            description="Mengenal lebih dekat Desa Kuwaru dan Tim KKN UNSOED 2026 yang mengembangkan platform ini"
         >
             {/* ============================================= */}
             {/* HERO SECTION */}
             {/* ============================================= */}
-            <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden">
+            <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
                 {/* Background Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-cyan-950 to-slate-900" />
                 
@@ -49,7 +57,7 @@ export default function About({ settings, stats }: Props) {
                 {/* Content */}
                 <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-cyan-500/20 backdrop-blur-sm border border-cyan-500/30 mt-5 mb-5">
+                    <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-cyan-500/20 backdrop-blur-sm border border-cyan-500/30 mt-5 mb-6">
                         <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
                         <span className="text-cyan-300 text-sm font-semibold tracking-wide uppercase">Tentang Kami</span>
                     </div>
@@ -62,10 +70,14 @@ export default function About({ settings, stats }: Props) {
                         <span className="bg-gradient-to-r from-white via-cyan-100 to-cyan-300 bg-clip-text text-transparent">
                             {settings.village_name || 'Desa Kuwaru'}
                         </span>
+                        <br />
+                        <span className="text-2xl md:text-3xl lg:text-4xl bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                            × KKN UNSOED 2026
+                        </span>
                     </h1>
                     
                     <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto">
-                        Mengenal lebih dekat desa kami dan program pemberdayaan <span className="text-cyan-400 font-semibold">UMKM digital</span>
+                        Kolaborasi antara masyarakat desa dan mahasiswa dalam <span className="text-cyan-400 font-semibold">transformasi digital UMKM</span>
                     </p>
                 </div>
                 
@@ -96,14 +108,18 @@ export default function About({ settings, stats }: Props) {
                     ) : (
                         <div className="space-y-4 text-slate-300 text-lg leading-relaxed">
                             <p>
-                                Desa Kuwaru adalah sebuah desa yang terletak di wilayah Yogyakarta, Indonesia. 
+                                Desa Kuwaru adalah sebuah desa yang terletak di <span className="text-cyan-400 font-semibold">Kecamatan Kuwarasan, Kabupaten Kebumen, Jawa Tengah</span>. 
                                 Desa ini memiliki potensi ekonomi yang besar dengan berbagai pelaku Usaha Mikro, 
-                                Kecil, dan Menengah (UMKM) yang menawarkan produk-produk berkualitas.
+                                Kecil, dan Menengah (UMKM) yang menawarkan produk-produk berkualitas khas Kebumen.
                             </p>
                             <p>
-                                Dengan semangat gotong royong dan kerja sama, masyarakat Desa Kuwaru terus 
-                                berupaya mengembangkan ekonomi lokal melalui digitalisasi UMKM. Platform ini 
-                                hadir sebagai jembatan antara pelaku usaha desa dengan konsumen yang lebih luas.
+                                Terletak di kawasan pedesaan yang subur, Desa Kuwaru dikelilingi oleh area pertanian 
+                                dan perkebunan yang menjadi sumber penghidupan masyarakat. Dengan semangat gotong royong 
+                                dan kerja sama, masyarakat terus berupaya mengembangkan ekonomi lokal melalui digitalisasi UMKM.
+                            </p>
+                            <p>
+                                Platform ini hadir sebagai jembatan antara pelaku usaha desa dengan konsumen yang lebih luas, 
+                                memperkenalkan produk-produk unggulan Kebumen ke seluruh Indonesia.
                             </p>
                         </div>
                     )}
@@ -111,42 +127,160 @@ export default function About({ settings, stats }: Props) {
             </section>
 
             {/* ============================================= */}
-            {/* STATS SECTION */}
+            {/* KKN UNSOED SECTION - HIGHLIGHT */}
             {/* ============================================= */}
-            <section className="relative py-16 md:py-20 bg-gradient-to-b from-slate-800 via-slate-900 to-slate-900 overflow-hidden">
-                {/* Background Decorations */}
+            <section className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-slate-800 via-slate-900 to-slate-900">
+                {/* Animated Background Elements */}
                 <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl" />
+                    <div className="absolute top-0 left-0 w-full h-full opacity-30">
+                        <div className="absolute top-20 left-10 w-32 h-32 border border-emerald-500/30 rounded-full animate-pulse" />
+                        <div className="absolute top-40 right-20 w-48 h-48 border border-cyan-500/20 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+                        <div className="absolute bottom-20 left-1/3 w-24 h-24 border border-teal-500/30 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+                    </div>
+                    <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px]" />
+                    <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-cyan-500/10 rounded-full blur-[100px]" />
                 </div>
                 
-                <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                            UMKM <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Kami</span>
-                        </h2>
-                        <p className="text-slate-400">Platform ini mendukung pertumbuhan ekonomi lokal</p>
+                <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Section Header with Logo */}
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-16">
+                        {/* KKN Logo */}
+                        <div className="relative group">
+                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500 animate-pulse" />
+                            <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full bg-white/10 backdrop-blur-md border-2 border-white/20 p-3 shadow-2xl shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-300">
+                                <img 
+                                    src="/logoKKN.png" 
+                                    alt="Logo KKN UNSOED" 
+                                    className="w-full h-full object-contain rounded-full"
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="text-center md:text-left">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 mb-4">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="text-emerald-300 text-xs font-semibold tracking-widest uppercase">The Creators</span>
+                            </div>
+                            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-3">
+                                <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                                    KKN UNSOED
+                                </span>
+                            </h2>
+                            <p className="text-xl md:text-2xl text-slate-300">
+                                Desa Kuwaru <span className="text-cyan-400">2026</span>
+                            </p>
+                        </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="group rounded-3xl p-8 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-emerald-500/50 transition-all duration-300 text-center hover:scale-105">
-                            <div className="text-5xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2">
-                                {stats.total_umkm}
+                    {/* KKN Description Card */}
+                    <div className="relative rounded-3xl overflow-hidden mb-16 group">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-teal-600/10 to-cyan-600/20 group-hover:from-emerald-600/30 group-hover:to-cyan-600/30 transition-all duration-500" />
+                        <div className="absolute inset-0 backdrop-blur-xl" />
+                        
+                        <div className="relative p-8 md:p-12 border border-white/10 rounded-3xl">
+                            <div className="grid md:grid-cols-2 gap-8 items-center">
+                                <div>
+                                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">
+                                        Apa itu <span className="text-emerald-400">KKN UNSOED</span>?
+                                    </h3>
+                                    <div className="space-y-4 text-slate-300 leading-relaxed">
+                                        <p>
+                                            <span className="font-semibold text-white">Kuliah Kerja Nyata (KKN)</span> adalah 
+                                            program pengabdian masyarakat dari Universitas Jenderal Soedirman (UNSOED) yang 
+                                            mengintegrasikan mahasiswa dengan komunitas desa untuk menciptakan dampak sosial nyata.
+                                        </p>
+                                        <p>
+                                            Tim KKN UNSOED 2026 di Desa Kuwaru berfokus pada <span className="text-cyan-400 font-semibold">digitalisasi UMKM</span> — 
+                                            membangun platform web modern ini untuk memperkenalkan produk-produk lokal berkualitas 
+                                            ke pasar yang lebih luas.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                {/* Stats Cards */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center hover:border-emerald-500/50 transition-colors group/card">
+                                        <div className="text-4xl font-bold bg-gradient-to-br from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2 group-hover/card:scale-110 transition-transform">
+                                            {stats.total_umkm}+
+                                        </div>
+                                        <div className="text-sm text-slate-400">UMKM Diberdayakan</div>
+                                    </div>
+                                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center hover:border-cyan-500/50 transition-colors group/card">
+                                        <div className="text-4xl font-bold bg-gradient-to-br from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-2 group-hover/card:scale-110 transition-transform">
+                                            35
+                                        </div>
+                                        <div className="text-sm text-slate-400">Hari Pengabdian</div>
+                                    </div>
+                                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center hover:border-purple-500/50 transition-colors group/card">
+                                        <div className="text-4xl font-bold bg-gradient-to-br from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2 group-hover/card:scale-110 transition-transform">
+                                            11
+                                        </div>
+                                        <div className="text-sm text-slate-400">Mahasiswa KKN</div>
+                                    </div>
+                                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center hover:border-orange-500/50 transition-colors group/card">
+                                        <div className="text-4xl font-bold bg-gradient-to-br from-orange-400 to-amber-400 bg-clip-text text-transparent mb-2 group-hover/card:scale-110 transition-transform">
+                                            ∞
+                                        </div>
+                                        <div className="text-sm text-slate-400">Semangat & Dedikasi</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="text-slate-400">UMKM Terdaftar</div>
                         </div>
-                        <div className="group rounded-3xl p-8 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-blue-500/50 transition-all duration-300 text-center hover:scale-105">
-                            <div className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
-                                100%
+                    </div>
+                    
+                    {/* Mission Cards */}
+                    <div className="grid md:grid-cols-3 gap-6 mb-16">
+                        {/* Mission 1 */}
+                        <div className="group p-6 rounded-3xl bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-emerald-500/50 transition-all duration-300 hover:scale-105">
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-emerald-500/30">
+                                <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
                             </div>
-                            <div className="text-slate-400">Produk Lokal</div>
+                            <h3 className="text-xl font-bold text-white mb-3">Digitalisasi UMKM</h3>
+                            <p className="text-slate-400 leading-relaxed">
+                                Menghadirkan UMKM desa ke dunia digital melalui platform web modern yang mudah diakses oleh siapa saja.
+                            </p>
                         </div>
-                        <div className="group rounded-3xl p-8 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-pink-500/50 transition-all duration-300 text-center hover:scale-105">
-                            <div className="text-5xl font-bold bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text text-transparent mb-2">
-                                ♥
+                        
+                        {/* Mission 2 */}
+                        <div className="group p-6 rounded-3xl bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-cyan-500/50 transition-all duration-300 hover:scale-105">
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-cyan-500/30">
+                                <svg className="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
                             </div>
-                            <div className="text-slate-400">Dibuat dengan Cinta</div>
+                            <h3 className="text-xl font-bold text-white mb-3">Edukasi & Pelatihan</h3>
+                            <p className="text-slate-400 leading-relaxed">
+                                Memberikan pendampingan dan pelatihan kepada pelaku UMKM dalam mengelola dan memasarkan produk secara online.
+                            </p>
                         </div>
+                        
+                        {/* Mission 3 */}
+                        <div className="group p-6 rounded-3xl bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-purple-500/50 transition-all duration-300 hover:scale-105">
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform border border-purple-500/30">
+                                <svg className="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-3">Pemberdayaan Komunitas</h3>
+                            <p className="text-slate-400 leading-relaxed">
+                                Membangun ekosistem yang mendukung pertumbuhan ekonomi lokal dan kemandirian masyarakat desa.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {/* Quote Section */}
+                    <div className="relative text-center max-w-3xl mx-auto">
+                        <svg className="w-12 h-12 text-emerald-500/30 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                        </svg>
+                        <p className="text-xl md:text-2xl text-slate-300 italic leading-relaxed mb-6">
+                            "Pengabdian kami bukan hanya tentang membangun website, tetapi tentang membangun 
+                            <span className="text-emerald-400 font-semibold"> harapan dan masa depan </span> 
+                            bagi UMKM Desa Kuwaru."
+                        </p>
+                        <p className="text-cyan-400 font-semibold">— Tim KKN UNSOED 2026</p>
                     </div>
                 </div>
             </section>
@@ -169,90 +303,14 @@ export default function About({ settings, stats }: Props) {
                                     </svg>
                                 </div>
                                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                                    Visi UMKM Desa
+                                    Visi Bersama
                                 </h2>
                             </div>
                             
                             <p className="text-lg md:text-xl text-slate-300 text-center leading-relaxed">
                                 {settings.village_vision || 
-                                    'Menjadikan Desa Kuwaru sebagai pusat UMKM unggulan yang mampu bersaing di era digital, dengan produk-produk berkualitas yang membawa nama baik desa dan meningkatkan kesejahteraan masyarakat.'
+                                    'Menjadikan Desa Kuwaru sebagai pusat UMKM unggulan yang mampu bersaing di era digital, dengan produk-produk berkualitas yang membawa nama baik desa dan meningkatkan kesejahteraan masyarakat melalui kolaborasi berkelanjutan antara masyarakat dan dunia akademik.'
                                 }
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ============================================= */}
-            {/* PLATFORM INFO SECTION */}
-            {/* ============================================= */}
-            <section className="relative py-16 md:py-20 bg-gradient-to-b from-slate-800 via-slate-900 to-slate-900 overflow-hidden">
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
-                </div>
-                
-                <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                            Tentang <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Platform</span> Ini
-                        </h2>
-                        <p className="text-slate-400">Bagaimana platform ini membantu UMKM desa</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Feature 1 */}
-                        <div className="group rounded-3xl p-6 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-emerald-500/50 transition-all duration-300">
-                            <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <svg className="w-7 h-7 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-semibold text-white mb-2">Visibilitas Online</h3>
-                            <p className="text-slate-400">
-                                Membantu UMKM desa hadir di dunia digital sehingga dapat dijangkau oleh 
-                                konsumen dari berbagai wilayah.
-                            </p>
-                        </div>
-
-                        {/* Feature 2 */}
-                        <div className="group rounded-3xl p-6 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-blue-500/50 transition-all duration-300">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-semibold text-white mb-2">Branding Profesional</h3>
-                            <p className="text-slate-400">
-                                Setiap UMKM memiliki halaman profil yang dapat dikustomisasi untuk 
-                                menampilkan brand mereka secara profesional.
-                            </p>
-                        </div>
-
-                        {/* Feature 3 */}
-                        <div className="group rounded-3xl p-6 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-purple-500/50 transition-all duration-300">
-                            <div className="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <svg className="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-semibold text-white mb-2">Statistik & Insight</h3>
-                            <p className="text-slate-400">
-                                Dashboard analitik membantu UMKM memahami performa dan perilaku 
-                                pengunjung untuk pengambilan keputusan yang lebih baik.
-                            </p>
-                        </div>
-
-                        {/* Feature 4 */}
-                        <div className="group rounded-3xl p-6 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-orange-500/50 transition-all duration-300">
-                            <div className="w-14 h-14 rounded-2xl bg-orange-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                <svg className="w-7 h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-semibold text-white mb-2">Koneksi Langsung</h3>
-                            <p className="text-slate-400">
-                                Integrasi dengan WhatsApp dan marketplace memudahkan konsumen untuk 
-                                langsung terhubung dengan pelaku UMKM.
                             </p>
                         </div>
                     </div>

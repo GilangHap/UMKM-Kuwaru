@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { PageProps } from '@/types';
+import axios from 'axios';
 
 interface Props extends PageProps {
     settings: {
@@ -16,8 +18,61 @@ interface Props extends PageProps {
     };
 }
 
+/**
+ * Parse Google Maps URL to extract latitude and longitude
+ */
+function parseGoogleMapsUrl(url: string): { lat: string; lng: string } | null {
+    if (!url) return null;
+    
+    try {
+        // Pattern 1: @-7.1234567,110.1234567
+        const pattern1 = /@(-?\d+\.?\d*),(-?\d+\.?\d*)/;
+        const match1 = url.match(pattern1);
+        if (match1) {
+            return { lat: match1[1], lng: match1[2] };
+        }
+        
+        // Pattern 2: !3d-7.1234567!4d110.1234567
+        const pattern2 = /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/;
+        const match2 = url.match(pattern2);
+        if (match2) {
+            return { lat: match2[1], lng: match2[2] };
+        }
+        
+        // Pattern 3: q=-7.1234567,110.1234567 or ll=-7.1234567,110.1234567
+        const pattern3 = /[?&](?:q|ll)=(-?\d+\.?\d*),(-?\d+\.?\d*)/;
+        const match3 = url.match(pattern3);
+        if (match3) {
+            return { lat: match3[1], lng: match3[2] };
+        }
+        
+        // Pattern 4: place/.../@-7.1234567,110.1234567
+        const pattern4 = /place\/[^@]*@(-?\d+\.?\d*),(-?\d+\.?\d*)/;
+        const match4 = url.match(pattern4);
+        if (match4) {
+            return { lat: match4[1], lng: match4[2] };
+        }
+        
+    } catch (e) {
+        console.error('Error parsing Google Maps URL:', e);
+    }
+    
+    return null;
+}
+
+/**
+ * Check if URL is a shortened Google Maps URL
+ */
+function isShortUrl(url: string): boolean {
+    return url.includes('goo.gl') || url.includes('maps.app');
+}
+
 export default function Index({ settings }: Props) {
     const { flash } = usePage().props as any;
+    const [mapsUrl, setMapsUrl] = useState('');
+    const [coordsMessage, setCoordsMessage] = useState<string | null>(null);
+    const [resolvingUrl, setResolvingUrl] = useState(false);
+
     const { data, setData, post, processing, errors } = useForm({
         site_name: settings.site_name || '',
         site_description: settings.site_description || '',
@@ -29,6 +84,59 @@ export default function Index({ settings }: Props) {
         map_center_lat: settings.map_center_lat || -7.9797,
         map_center_lng: settings.map_center_lng || 110.2827,
     });
+
+    const handleMapsUrlChange = async (url: string) => {
+        setMapsUrl(url);
+        
+        if (!url) {
+            setCoordsMessage(null);
+            return;
+        }
+        
+        // Try local parsing first
+        const coords = parseGoogleMapsUrl(url);
+        if (coords) {
+            setData(prev => ({
+                ...prev,
+                map_center_lat: parseFloat(coords.lat),
+                map_center_lng: parseFloat(coords.lng),
+            }));
+            setCoordsMessage(`✓ Koordinat berhasil diambil: ${coords.lat}, ${coords.lng}`);
+            return;
+        }
+        
+        // If it's a shortened URL, call backend to resolve
+        if (isShortUrl(url)) {
+            setResolvingUrl(true);
+            setCoordsMessage('⏳ Memproses shortened URL...');
+            
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                const response = await axios.post('/admin/maps/resolve', { url }, {
+                    headers: { 'X-CSRF-TOKEN': csrfToken || '' }
+                });
+                
+                if (response.data.success) {
+                    setData(prev => ({
+                        ...prev,
+                        map_center_lat: parseFloat(response.data.latitude),
+                        map_center_lng: parseFloat(response.data.longitude),
+                    }));
+                    setCoordsMessage(`✓ Koordinat berhasil diambil: ${response.data.latitude}, ${response.data.longitude}`);
+                } else {
+                    setCoordsMessage('⚠ ' + (response.data.message || 'Gagal mengambil koordinat'));
+                }
+            } catch (error: any) {
+                console.error('Error resolving URL:', error);
+                setCoordsMessage('⚠ Gagal memproses URL. Coba paste full URL Google Maps.');
+            } finally {
+                setResolvingUrl(false);
+            }
+            return;
+        }
+        
+        setCoordsMessage('⚠ Tidak dapat mengambil koordinat dari URL ini');
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -183,6 +291,32 @@ export default function Index({ settings }: Props) {
                 <div className="card p-6">
                     <h2 className="text-lg font-semibold text-foreground mb-6">Pengaturan Peta</h2>
                     
+                    {/* Google Maps Link */}
+                    <div className="p-4 bg-surface-hover rounded-lg border border-border mb-4">
+                        <label className="block text-sm font-medium text-foreground mb-1">
+                            <svg className="w-4 h-4 inline mr-1 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Link Google Maps
+                        </label>
+                        <input
+                            type="text"
+                            value={mapsUrl}
+                            onChange={(e) => handleMapsUrlChange(e.target.value)}
+                            className="input"
+                            placeholder="Paste link Google Maps di sini..."
+                        />
+                        {coordsMessage && (
+                            <p className={`text-sm mt-1 ${coordsMessage.startsWith('✓') ? 'text-success' : 'text-warning'}`}>
+                                {coordsMessage}
+                            </p>
+                        )}
+                        <p className="text-xs text-muted mt-2">
+                            Buka Google Maps → Cari lokasi UMKM → Klik kanan → Copy link → Paste di sini
+                        </p>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-foreground mb-1">
@@ -210,7 +344,7 @@ export default function Index({ settings }: Props) {
                             />
                         </div>
                     </div>
-                    <p className="text-xs text-muted mt-2">Digunakan untuk pusat peta UMKM</p>
+                    <p className="text-xs text-muted mt-2">Koordinat ini digunakan sebagai titik tengah default peta di halaman pengunjung.</p>
                 </div>
 
                 {/* Submit */}
@@ -220,7 +354,15 @@ export default function Index({ settings }: Props) {
                         disabled={processing}
                         className="btn-primary"
                     >
-                        {processing ? 'Menyimpan...' : 'Simpan Pengaturan'}
+                        {processing ? (
+                            <>
+                                <svg className="w-4 h-4 mr-2 animate-spin inline" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
+                                Menyimpan...
+                            </>
+                        ) : 'Simpan Pengaturan'}
                     </button>
                 </div>
             </form>

@@ -47,7 +47,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
         { name: 'UMKM', href: '/umkm' },
         { name: 'Artikel', href: '/artikel' },
         { name: 'Peta UMKM', href: '/peta-umkm' },
-        { name: 'Tentang Desa', href: '/tentang-desa' },
+        { name: 'Tentang', href: '/tentang-desa' },
     ];
     
     // Check if a menu item is active

@@ -138,7 +138,7 @@ export default function Dashboard({ stats, pendingArticles, recentUmkms }: Props
                             recentUmkms.map((umkm) => (
                                 <Link 
                                     key={umkm.id} 
-                                    href={route('admin.umkm.edit', umkm.id)}
+                                    href={route('admin.umkm.show', umkm.id)}
                                     className="p-4 flex items-center justify-between hover:bg-surface-hover transition-colors block"
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
