@@ -14,8 +14,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // PostgreSQL syntax untuk mengubah column ke nullable
-        DB::statement('ALTER TABLE products ALTER COLUMN description DROP NOT NULL');
+        Schema::table('products', function (Blueprint $table) {
+            $table->text('description')->nullable()->change();
+        });
     }
 
     /**
@@ -24,6 +25,9 @@ return new class extends Migration
     public function down(): void
     {
         DB::statement("UPDATE products SET description = '' WHERE description IS NULL");
-        DB::statement('ALTER TABLE products ALTER COLUMN description SET NOT NULL');
+        
+        Schema::table('products', function (Blueprint $table) {
+            $table->text('description')->nullable(false)->change();
+        });
     }
 };

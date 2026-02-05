@@ -40,6 +40,28 @@ Route::get('/tentang-desa', [AboutController::class, 'index'])->name('about');
 
 /*
 |--------------------------------------------------------------------------
+| Error Testing Routes (Development Only)
+|--------------------------------------------------------------------------
+|
+| Routes untuk testing halaman error. HAPUS di production!
+|
+*/
+
+if (app()->environment('local')) {
+    Route::prefix('test-error')->group(function () {
+        Route::get('/400', fn() => abort(400));
+        Route::get('/401', fn() => abort(401));
+        Route::get('/403', fn() => abort(403));
+        Route::get('/404', fn() => abort(404));
+        Route::get('/419', fn() => abort(419));
+        Route::get('/429', fn() => abort(429));
+        Route::get('/500', fn() => abort(500));
+        Route::get('/503', fn() => abort(503));
+    });
+}
+
+/*
+|--------------------------------------------------------------------------
 | Admin Desa Routes
 |--------------------------------------------------------------------------
 |
