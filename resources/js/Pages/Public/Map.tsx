@@ -33,16 +33,18 @@ interface Props {
         lng: number;
     };
     mapZoom: number;
+    villageBoundary: [number, number][];
     filters: {
         category: string;
     };
 }
 
 // Leaflet Map Component - Client Side Only
-function LeafletMapClient({ umkms, mapCenter, mapZoom, selectedUmkm, onMarkerClick }: {
+function LeafletMapClient({ umkms, mapCenter, mapZoom, villageBoundary, selectedUmkm, onMarkerClick }: {
     umkms: Umkm[];
     mapCenter: { lat: number; lng: number };
     mapZoom: number;
+    villageBoundary: [number, number][];
     selectedUmkm: Umkm | null;
     onMarkerClick: (umkm: Umkm) => void;
 }) {
@@ -72,6 +74,31 @@ function LeafletMapClient({ umkms, mapCenter, mapZoom, selectedUmkm, onMarkerCli
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
             }).addTo(map);
 
+            // Add Kuwaru Village Boundary Polygon (only if boundary exists)
+            if (villageBoundary && villageBoundary.length >= 3) {
+                const boundaryPolygon = L.polygon(villageBoundary, {
+                    color: '#10b981',
+                    weight: 3,
+                    opacity: 0.9,
+                    fillColor: '#10b981',
+                    fillOpacity: 0.08,
+                    dashArray: '8, 6',
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                }).addTo(map);
+
+                // Add glow effect with a second polygon
+                L.polygon(villageBoundary, {
+                    color: '#10b981',
+                    weight: 8,
+                    opacity: 0.2,
+                    fill: false,
+                    dashArray: '8, 6',
+                }).addTo(map);
+
+
+            }
+
             // Add markers
             umkms.filter(u => u.latitude && u.longitude).forEach((umkm) => {
                 const color = umkm.theme?.primary_color || '#10b981';
@@ -80,55 +107,185 @@ function LeafletMapClient({ umkms, mapCenter, mapZoom, selectedUmkm, onMarkerCli
                     className: 'custom-marker',
                     html: `
                         <div style="
-                            width: 32px;
-                            height: 32px;
-                            background: linear-gradient(135deg, ${color}, ${color}cc);
+                            width: 36px;
+                            height: 36px;
+                            background: linear-gradient(135deg, ${color}, ${color}dd);
                             border: 3px solid white;
                             border-radius: 50% 50% 50% 0;
                             transform: rotate(-45deg);
-                            box-shadow: 0 4px 15px ${color}60;
+                            box-shadow: 0 4px 20px ${color}70, 0 0 0 4px ${color}25;
                             display: flex;
                             align-items: center;
                             justify-content: center;
+                            transition: all 0.3s ease;
                         ">
                             <span style="
                                 transform: rotate(45deg);
                                 color: white;
                                 font-weight: bold;
-                                font-size: 12px;
+                                font-size: 13px;
+                                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
                             ">${umkm.name.charAt(0)}</span>
                         </div>
                     `,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 32],
-                    popupAnchor: [0, -32],
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 36],
+                    popupAnchor: [0, -36],
                 });
 
                 const marker = L.marker([umkm.latitude, umkm.longitude], { icon: customIcon })
                     .addTo(map);
 
-                // Popup content
+                // Modern Popup Content with Glassmorphism
                 const popupContent = `
-                    <div style="min-width: 200px; font-family: system-ui, sans-serif;">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                            ${umkm.logo_url 
-                                ? `<img src="${umkm.logo_url}" alt="${umkm.name}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover;" />`
-                                : `<div style="width: 48px; height: 48px; border-radius: 8px; background: ${color}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">${umkm.name.charAt(0)}</div>`
-                            }
-                            <div>
-                                <div style="font-weight: 600; color: #1f2937;">${umkm.name}</div>
-                                ${umkm.category ? `<div style="font-size: 12px; color: #6b7280;">${umkm.category}</div>` : ''}
+                    <div class="umkm-popup-container" style="
+                        min-width: 280px;
+                        max-width: 320px;
+                        font-family: 'Inter', system-ui, sans-serif;
+                        overflow: hidden;
+                    ">
+                        <!-- Header with gradient -->
+                        <div style="
+                            background: linear-gradient(135deg, ${color}, ${color}cc);
+                            padding: 16px;
+                            margin: -13px -13px 0 -13px;
+                            position: relative;
+                        ">
+                            <!-- Pattern overlay -->
+                            <div style="
+                                position: absolute;
+                                inset: 0;
+                                background: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 80 80%22><circle cx=%2240%22 cy=%2240%22 r=%2230%22 fill=%22white%22 fill-opacity=%220.05%22/></svg>');
+                                background-size: 40px 40px;
+                            "></div>
+                            
+                            <div style="display: flex; align-items: center; gap: 14px; position: relative; z-index: 1;">
+                                ${umkm.logo_url 
+                                    ? `<img src="${umkm.logo_url}" alt="${umkm.name}" style="
+                                        width: 56px; 
+                                        height: 56px; 
+                                        border-radius: 14px; 
+                                        object-fit: cover;
+                                        border: 3px solid rgba(255,255,255,0.3);
+                                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                                    " />`
+                                    : `<div style="
+                                        width: 56px; 
+                                        height: 56px; 
+                                        border-radius: 14px; 
+                                        background: rgba(255,255,255,0.2);
+                                        backdrop-filter: blur(10px);
+                                        display: flex; 
+                                        align-items: center; 
+                                        justify-content: center; 
+                                        color: white; 
+                                        font-weight: bold; 
+                                        font-size: 22px;
+                                        border: 3px solid rgba(255,255,255,0.3);
+                                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                                    ">${umkm.name.charAt(0)}</div>`
+                                }
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="
+                                        font-weight: 700; 
+                                        color: white;
+                                        font-size: 16px;
+                                        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                                        overflow: hidden;
+                                        text-overflow: ellipsis;
+                                        white-space: nowrap;
+                                    ">${umkm.name}</div>
+                                    ${umkm.category ? `
+                                        <div style="
+                                            display: inline-flex;
+                                            align-items: center;
+                                            gap: 4px;
+                                            margin-top: 6px;
+                                            padding: 4px 10px;
+                                            background: rgba(255,255,255,0.2);
+                                            backdrop-filter: blur(5px);
+                                            border-radius: 20px;
+                                            font-size: 11px;
+                                            color: rgba(255,255,255,0.95);
+                                            font-weight: 500;
+                                        ">
+                                            <span>📍</span> ${umkm.category}
+                                        </div>
+                                    ` : ''}
+                                </div>
                             </div>
                         </div>
-                        ${umkm.tagline ? `<p style="font-size: 13px; color: #4b5563; margin: 8px 0;">${umkm.tagline}</p>` : ''}
-                        <div style="display: flex; gap: 8px; margin-top: 12px;">
-                            <a href="/umkm/${umkm.slug}" style="flex: 1; padding: 8px 12px; text-align: center; font-size: 12px; font-weight: 600; background: #10b981; color: white; border-radius: 8px; text-decoration: none;">Lihat Detail</a>
-                            ${umkm.whatsapp ? `<a href="https://wa.me/${umkm.whatsapp.replace(/\\D/g, '').replace(/^0/, '62')}" target="_blank" style="padding: 8px 12px; font-size: 12px; font-weight: 600; background: #22c55e; color: white; border-radius: 8px; text-decoration: none;">WA</a>` : ''}
+                        
+                        <!-- Body -->
+                        <div style="padding: 16px 4px;">
+                            ${umkm.tagline ? `
+                                <p style="
+                                    font-size: 13px; 
+                                    color: #64748b; 
+                                    margin: 0 0 16px 0;
+                                    line-height: 1.5;
+                                    font-style: italic;
+                                    padding-left: 12px;
+                                    border-left: 3px solid ${color}40;
+                                ">"${umkm.tagline}"</p>
+                            ` : ''}
+                            
+                            <!-- Action Buttons -->
+                            <div style="display: flex; gap: 10px;">
+                                <a href="/umkm/${umkm.slug}" style="
+                                    flex: 1; 
+                                    padding: 12px 16px; 
+                                    text-align: center; 
+                                    font-size: 13px; 
+                                    font-weight: 600; 
+                                    background: linear-gradient(135deg, ${color}, ${color}dd);
+                                    color: white; 
+                                    border-radius: 12px; 
+                                    text-decoration: none;
+                                    box-shadow: 0 4px 15px ${color}40;
+                                    transition: all 0.2s ease;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    gap: 6px;
+                                ">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                                        <polyline points="10 17 15 12 10 7"/>
+                                        <line x1="15" y1="12" x2="3" y2="12"/>
+                                    </svg>
+                                    Lihat Detail
+                                </a>
+                                ${umkm.whatsapp ? `
+                                    <a href="https://wa.me/${umkm.whatsapp.replace(/\\D/g, '').replace(/^0/, '62')}" target="_blank" style="
+                                        padding: 12px 16px;
+                                        font-size: 13px; 
+                                        font-weight: 600; 
+                                        background: linear-gradient(135deg, #22c55e, #16a34a);
+                                        color: white; 
+                                        border-radius: 12px; 
+                                        text-decoration: none;
+                                        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+                                        transition: all 0.2s ease;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 6px;
+                                    ">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                        </svg>
+                                        Chat
+                                    </a>
+                                ` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
 
-                marker.bindPopup(popupContent);
+                marker.bindPopup(popupContent, {
+                    maxWidth: 350,
+                    className: 'modern-popup',
+                });
                 marker.on('click', () => onMarkerClick(umkm));
                 
                 markersRef.current.push({ marker, umkm });
@@ -159,14 +316,26 @@ function LeafletMapClient({ umkms, mapCenter, mapZoom, selectedUmkm, onMarkerCli
     return <div ref={mapContainerRef} className="w-full h-full" />;
 }
 
-export default function Map({ umkms, categories, mapCenter, mapZoom, filters }: Props) {
+export default function Map({ umkms, categories, mapCenter, mapZoom, villageBoundary, filters }: Props) {
     const [selectedUmkm, setSelectedUmkm] = useState<Umkm | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [isClient, setIsClient] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
     }, []);
+
+    // Handle ESC key to exit fullscreen
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isFullscreen) {
+                setIsFullscreen(false);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isFullscreen]);
 
     const handleCategoryChange = (categoryId: string) => {
         router.get('/peta-umkm', { category: categoryId }, { preserveState: true });
@@ -204,12 +373,54 @@ export default function Map({ umkms, categories, mapCenter, mapZoom, filters }: 
                     background: transparent !important;
                     border: none !important;
                 }
+
                 .leaflet-popup-content-wrapper {
-                    border-radius: 12px !important;
+                    border-radius: 16px !important;
                     padding: 0 !important;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+                    overflow: hidden;
+                    animation: popupFadeIn 0.3s ease-out;
                 }
                 .leaflet-popup-content {
-                    margin: 12px !important;
+                    margin: 13px !important;
+                    width: auto !important;
+                }
+                .leaflet-popup-tip-container {
+                    display: none;
+                }
+                .modern-popup .leaflet-popup-content-wrapper {
+                    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.98)) !important;
+                }
+                .leaflet-popup-close-button {
+                    color: #64748b !important;
+                    font-size: 24px !important;
+                    right: 10px !important;
+                    top: 10px !important;
+                    width: 28px !important;
+                    height: 28px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    background: rgba(255,255,255,0.8) !important;
+                    border-radius: 50% !important;
+                    backdrop-filter: blur(4px) !important;
+                    z-index: 10 !important;
+                    transition: all 0.2s ease !important;
+                }
+                .leaflet-popup-close-button:hover {
+                    background: rgba(255,255,255,1) !important;
+                    color: #1e293b !important;
+                    transform: scale(1.1) !important;
+                }
+                @keyframes popupFadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px) scale(0.95);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
                 }
             `}</style>
 
@@ -323,6 +534,7 @@ export default function Map({ umkms, categories, mapCenter, mapZoom, filters }: 
                                         umkms={filteredUmkms}
                                         mapCenter={mapCenter}
                                         mapZoom={mapZoom}
+                                        villageBoundary={villageBoundary}
                                         selectedUmkm={selectedUmkm}
                                         onMarkerClick={handleUmkmClick}
                                     />

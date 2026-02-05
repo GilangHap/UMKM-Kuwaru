@@ -286,38 +286,6 @@ export default function About({ settings, stats }: Props) {
             </section>
 
             {/* ============================================= */}
-            {/* VISION SECTION */}
-            {/* ============================================= */}
-            <section className="relative py-16 md:py-20 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="relative rounded-3xl overflow-hidden">
-                        {/* Background Glow */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-teal-500/10 to-emerald-500/20" />
-                        <div className="absolute inset-0 backdrop-blur-xl" />
-                        
-                        <div className="relative p-8 md:p-12 border border-white/10 rounded-3xl">
-                            <div className="text-center mb-8">
-                                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-cyan-500/30 to-teal-500/30 flex items-center justify-center border border-white/20">
-                                    <svg className="w-10 h-10 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                    </svg>
-                                </div>
-                                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                                    Visi Bersama
-                                </h2>
-                            </div>
-                            
-                            <p className="text-lg md:text-xl text-slate-300 text-center leading-relaxed">
-                                {settings.village_vision || 
-                                    'Menjadikan Desa Kuwaru sebagai pusat UMKM unggulan yang mampu bersaing di era digital, dengan produk-produk berkualitas yang membawa nama baik desa dan meningkatkan kesejahteraan masyarakat melalui kolaborasi berkelanjutan antara masyarakat dan dunia akademik.'
-                                }
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ============================================= */}
             {/* CTA SECTION */}
             {/* ============================================= */}
             <section className="relative py-20 md:py-28 overflow-hidden">

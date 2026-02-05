@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import BoundaryEditor from '@/Components/BoundaryEditor';
 import { PageProps } from '@/types';
 import axios from 'axios';
 
@@ -15,6 +16,7 @@ interface Props extends PageProps {
         footer_text: string;
         map_center_lat: number;
         map_center_lng: number;
+        village_boundary: [number, number][];
     };
 }
 
@@ -83,6 +85,7 @@ export default function Index({ settings }: Props) {
         footer_text: settings.footer_text || '',
         map_center_lat: settings.map_center_lat || -7.9797,
         map_center_lng: settings.map_center_lng || 110.2827,
+        village_boundary: settings.village_boundary || [] as [number, number][],
     });
 
     const handleMapsUrlChange = async (url: string) => {
@@ -345,6 +348,20 @@ export default function Index({ settings }: Props) {
                         </div>
                     </div>
                     <p className="text-xs text-muted mt-2">Koordinat ini digunakan sebagai titik tengah default peta di halaman pengunjung.</p>
+                </div>
+
+                {/* Village Boundary Settings */}
+                <div className="card p-6">
+                    <h2 className="text-lg font-semibold text-foreground mb-2">Batas Wilayah Desa</h2>
+                    <p className="text-sm text-muted mb-6">
+                        Gambar polygon untuk menandai batas wilayah Desa Kuwaru pada peta publik.
+                    </p>
+                    
+                    <BoundaryEditor
+                        initialBoundary={data.village_boundary}
+                        mapCenter={{ lat: data.map_center_lat, lng: data.map_center_lng }}
+                        onChange={(boundary) => setData('village_boundary', boundary)}
+                    />
                 </div>
 
                 {/* Submit */}

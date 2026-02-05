@@ -26,6 +26,7 @@ class AdminSettingsController extends Controller
             'footer_text' => Setting::get('footer_text'),
             'map_center_lat' => Setting::get('map_center_lat', -7.9797),
             'map_center_lng' => Setting::get('map_center_lng', 110.2827),
+            'village_boundary' => Setting::getJson('village_boundary', []),
         ];
 
         return Inertia::render('Admin/Settings/Index', [
@@ -48,6 +49,9 @@ class AdminSettingsController extends Controller
             'footer_text' => 'nullable|string|max:500',
             'map_center_lat' => 'nullable|numeric|between:-90,90',
             'map_center_lng' => 'nullable|numeric|between:-180,180',
+            'village_boundary' => 'nullable|array',
+            'village_boundary.*' => 'array|size:2',
+            'village_boundary.*.*' => 'numeric',
         ]);
 
         // Handle logo upload
@@ -72,6 +76,11 @@ class AdminSettingsController extends Controller
         Setting::set('footer_text', $validated['footer_text'] ?? '');
         Setting::set('map_center_lat', $validated['map_center_lat'] ?? -7.9797);
         Setting::set('map_center_lng', $validated['map_center_lng'] ?? 110.2827);
+        
+        // Update village boundary as JSON
+        if (isset($validated['village_boundary'])) {
+            Setting::setJson('village_boundary', $validated['village_boundary']);
+        }
 
         // Clear cache
         Cache::forget('site_settings');

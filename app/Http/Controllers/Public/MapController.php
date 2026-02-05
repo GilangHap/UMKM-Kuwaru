@@ -55,6 +55,9 @@ class MapController extends Controller
 
         $categories = Category::orderBy('name')->get(['id', 'name', 'slug']);
 
+        // Get village boundary
+        $villageBoundary = Setting::getJson('village_boundary', []);
+
         return Inertia::render('Public/Map', [
             'umkms' => $umkms,
             'categories' => $categories,
@@ -63,6 +66,7 @@ class MapController extends Controller
                 'lng' => (float) ($settings['map_center_lng'] ?? 110.3643),
             ],
             'mapZoom' => (int) ($settings['map_default_zoom'] ?? 14),
+            'villageBoundary' => $villageBoundary,
             'filters' => [
                 'category' => $request->category ?? '',
             ],

@@ -30,7 +30,7 @@ export default function DashboardHeader({
     const user = auth?.user;
     
     return (
-        <header className="bg-surface border-b border-border px-6 py-4">
+        <header className="sticky top-0 z-40 bg-surface border-b border-border px-6 py-4">
             <div className="flex items-center justify-between">
                 {/* Left: Title & Breadcrumbs */}
                 <div>
